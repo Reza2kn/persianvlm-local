@@ -1,0 +1,3062 @@
+
+<style>
+  .seed69k-ocr-fill,.seed69k-ocr-bina,.seed69k-ocr-gemini { display:none!important; }
+  @font-face {font-family:Vazirmatn;src:url(/local/font.ttf) format("truetype");font-weight:100 900;font-display:swap;}
+
+  body, button, input, textarea, select, [role="button"], [contenteditable="true"] {
+    font-family: "Vazirmatn", Tahoma, Arial, sans-serif !important;
+  }
+  body { font-size: 17px !important; }
+  button, input, textarea, select, [contenteditable="true"] {
+    font-size: 17px !important; line-height: 1.75 !important;
+  }
+  [dir="rtl"], :lang(fa), .prose, .ProseMirror {
+    font-family: "Vazirmatn", Tahoma, Arial, sans-serif !important;
+    font-size: 18px !important; line-height: 1.9 !important;
+  }
+  label, legend { font-size: 17px !important; line-height: 1.7 !important; }
+  .seed69k-wrap { display:flex; width:100%; flex-direction:column; gap:.75rem; overflow-anchor:none; }
+  .seed69k-frame {
+    position:relative; display:flex; width:100%; min-height:72vh; align-items:flex-start;
+    justify-content:center; overflow:auto; border-radius:0; background:#f4f5f7;
+    box-sizing:border-box; overflow-anchor:none;
+  }
+  .seed69k-rotation-canvas { position:relative; display:block; flex:0 0 auto; }
+  .seed69k-stage { position:absolute; left:50%; top:50%; display:inline-block; width:min(680px, 100%); min-width:360px; flex:0 0 auto; transform-origin:center center; }
+  .seed69k-stage img {
+    display:block; width:100%; max-width:none; height:auto; max-height:none; object-fit:contain;
+  }
+  .seed69k-layout-box {
+    position:absolute; box-sizing:border-box; border:1.5px solid transparent;
+    background:transparent; cursor:crosshair; z-index:2; pointer-events:auto; touch-action:none;
+  }
+  .seed69k-layout-box::before {
+    content:""; position:absolute; inset:-10px; background:transparent; pointer-events:none;
+  }
+  .seed69k-layout-box:hover {
+    border-color:#00e5ff; background:rgba(0,229,255,.12);
+    box-shadow:0 0 0 1px rgba(0,0,0,.55), 0 0 16px rgba(0,229,255,.45);
+    z-index:8;
+  }
+  .seed69k-layout-tip {
+    display:none; position:fixed; left:12px; top:12px; transform:none;
+    width:min(560px, calc(100vw - 32px)); max-width:min(560px, calc(100vw - 32px)); min-width:200px;
+    max-height:min(72vh, 720px); overflow:auto; box-sizing:border-box;
+    scrollbar-gutter:stable;
+    direction:rtl; text-align:right;
+    color:#fff; background:rgba(0,0,0,.92); border:1px solid rgba(255,255,255,.25);
+    border-radius:7px; padding:6px 8px; font-size:11px; line-height:1.55;
+    white-space:pre-wrap; overflow-wrap:anywhere; pointer-events:none; z-index:2147483647;
+    box-shadow:0 8px 28px rgba(0,0,0,.48);
+  }
+  .seed69k-layout-tip .tip-head { direction:ltr; text-align:left; color:#9eefff; font-size:10px; margin-bottom:3px; }
+  .seed69k-layout-tip .tip-content { color:#fff; }
+  .seed69k-layout-tip .tip-muted { color:#bbb; }
+  .seed69k-layout-tip table { border-collapse:collapse; width:100%; direction:rtl; font-size:11px; }
+  .seed69k-layout-tip th, .seed69k-layout-tip td { border:1px solid rgba(255,255,255,.32); padding:2px 4px; }
+  .seed69k-layout-meta { direction:rtl; color:#d8b8c0; font-size:14px; line-height:1.8; }
+  .seed69k-layout-link { direction:rtl; }
+  .seed69k-layout-toolbar {
+    direction:rtl; display:flex; flex-wrap:wrap; align-items:center; gap:.5rem;
+    color:#fff; font-size:14px; background:#250711; border:1px solid rgba(255,255,255,.16);
+    border-radius:10px; padding:8px; position:fixed; right:12px; top:12px; bottom:auto; z-index:40;
+    width:172px; max-height:calc(100vh - 24px); overflow:auto; box-sizing:border-box;
+    flex:0 0 auto; margin:0; flex-direction:column; flex-wrap:nowrap; align-items:stretch; gap:6px;
+    box-shadow:0 8px 28px rgba(0,0,0,.28); backdrop-filter:blur(8px);
+  }
+  .seed69k-layout-toolbar button, .seed69k-layout-toolbar select {
+    border-radius:7px; border:1px solid rgba(255,255,255,.25); background:#3a1020; color:#fff;
+    padding:3px 5px; font-size:13px !important; line-height:1.35 !important;
+  }
+  .seed69k-layout-toolbar button.seed69k-active {
+    background:#ffc107; color:#160309; border-color:#fff; font-weight:700;
+  }
+  .seed69k-layout-help { display:none !important; }
+  .seed69k-layout-toolbar > label { display:flex; align-items:center; gap:5px; margin:0; font-size:12px !important; }
+  .seed69k-layout-toolbar > select, .seed69k-layout-toolbar > button { width:100%; box-sizing:border-box; }
+  .seed69k-layout-toolbar > .seed69k-class-palette { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+  .seed69k-layout-toolbar > .seed69k-class-palette .seed69k-class-chip { width:100%; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+  .seed69k-layout-toolbar > .seed69k-layout-status { min-width:0; max-width:100%; font-size:11px; line-height:1.45; overflow-wrap:anywhere; }
+  @media (max-width:900px) {
+    .seed69k-layout-toolbar { width:144px !important; right:6px !important; top:6px !important; max-height:calc(100vh - 12px) !important; }
+  }
+  .seed69k-zoom-controls { display:inline-flex; align-items:center; gap:4px; direction:ltr; }
+  .seed69k-zoom-controls button { width:30px; height:30px; padding:0 !important; font-size:20px !important; line-height:1 !important; font-weight:700; }
+  .seed69k-zoom-value { min-width:44px; text-align:center; color:#fff; font-size:11px; }
+  .seed69k-rotation-value { min-width:38px; text-align:center; color:#fff; font-size:11px; }
+  .seed69k-layout-status { color:#d8b8c0; min-width:160px; }
+  .seed69k-class-palette {
+    direction:ltr; display:flex; flex-wrap:wrap; align-items:center; gap:4px;
+  }
+  .seed69k-class-chip {
+    border-radius:999px !important; padding:3px 7px !important; font-size:12px !important;
+    background:#3a1020 !important; color:#fff !important; cursor:pointer;
+  }
+  .seed69k-class-chip.seed69k-active {
+    background:#ffc107 !important; color:#160309 !important; border-color:#fff !important; font-weight:800;
+  }
+  .seed69k-floating-editor {
+    display:none; position:fixed; z-index:2147483647;
+    width:min(640px, calc(100vw - 16px)); max-width:calc(100vw - 16px);
+    height:auto; max-height:calc(100vh - 16px); overflow:auto; box-sizing:border-box;
+    scrollbar-gutter:stable;
+    direction:rtl; background:rgba(22,3,9,.96); color:#fff; border:1px solid rgba(255,255,255,.3);
+    border-radius:10px; padding:8px; box-shadow:0 14px 44px rgba(0,0,0,.55);
+  }
+  .seed69k-floating-editor .seed69k-floating-title { color:#ffc107; font-size:12px; margin-bottom:5px; }
+  .seed69k-ocr-editor {
+    margin-top:8px; border-top:1px solid rgba(255,255,255,.18); padding-top:8px;
+  }
+  .seed69k-ocr-editor label { display:block; color:#9eefff; font-size:12px !important; margin-bottom:4px; }
+  .seed69k-markdown-preview {
+    max-height:min(30vh, 320px); overflow:auto; margin:0 0 8px; padding:10px;
+    scrollbar-gutter:stable;
+    box-sizing:border-box; direction:rtl; color:#171717; background:#fff;
+    border:1px solid rgba(255,255,255,.28); border-radius:8px;
+  }
+  .seed69k-markdown-preview[hidden] { display:none !important; }
+  .seed69k-table-compare-overlay {
+    display:none !important; position:fixed !important; z-index:2147483646 !important;
+    box-sizing:border-box; overflow:hidden; direction:rtl;
+    background:rgba(22,3,9,.94); color:#fff; border:2px solid #ffc107;
+    border-radius:10px; box-shadow:0 14px 44px rgba(0,0,0,.62);
+    font-family:"Vazirmatn",Tahoma,Arial,sans-serif; pointer-events:auto;
+  }
+  .seed69k-table-compare-overlay.is-open {
+    display:flex !important; flex-direction:column !important;
+  }
+  .seed69k-table-compare-head {
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    flex:0 0 auto; box-sizing:border-box; min-height:32px; padding:4px 8px;
+    background:#3a1020; color:#ffc107; font-size:13px; font-weight:800;
+    cursor:move; touch-action:none; user-select:none;
+  }
+  .seed69k-table-compare-close {
+    width:24px; height:24px; padding:0; border:1px solid rgba(255,255,255,.55);
+    border-radius:5px; background:transparent; color:#fff; font:18px/20px Arial,sans-serif;
+    cursor:pointer;
+  }
+  .seed69k-table-compare-body {
+    min-height:0; flex:1 1 auto; overflow:auto; background:rgba(255,255,255,.96);
+    color:#171717; padding:6px; box-sizing:border-box; direction:ltr;
+  }
+  .seed69k-table-compare-body .seed69k-safe-table {
+    width:100%; border-collapse:collapse; table-layout:fixed; direction:rtl;
+    font-family:"Vazirmatn",Tahoma,Arial,sans-serif; font-size:clamp(10px,1.45vw,18px); line-height:1.45;
+  }
+  .seed69k-table-compare-body .seed69k-safe-table th,
+  .seed69k-table-compare-body .seed69k-safe-table td {
+    border:1px solid #777; padding:4px 6px; vertical-align:top; text-align:right;
+    direction:rtl; white-space:pre-wrap; overflow-wrap:anywhere;
+  }
+  .seed69k-table-compare-body .seed69k-safe-table th { background:#eee8d9; font-weight:800; }
+  .seed69k-table-compare-body .seed69k-safe-pre {
+    margin:0; white-space:pre-wrap; overflow-wrap:anywhere; direction:rtl; text-align:right;
+    color:#171717; font:16px/1.8 "Vazirmatn",Tahoma,sans-serif;
+  }
+
+  .seed69k-table-compare-button {
+    position:absolute !important; top:-34px !important; right:0 !important;
+    z-index:30 !important; width:30px !important; height:30px !important;
+    min-width:30px !important; min-height:30px !important; padding:0 !important;
+    border:1px solid rgba(255,255,255,.8) !important; border-radius:7px !important;
+    background:rgba(22,3,9,.9) !important; color:#ffc107 !important;
+    font:20px/28px Arial,sans-serif !important; text-align:center !important;
+    cursor:pointer !important; pointer-events:auto !important; opacity:1 !important;
+    box-shadow:0 2px 8px rgba(0,0,0,.4) !important;
+  }
+  .seed69k-table-compare-button:hover,
+  .seed69k-table-compare-button[aria-pressed="true"] {
+    background:#ffc107 !important; color:#160309 !important;
+  }
+  .seed69k-markdown-preview table {
+    width:100%; border-collapse:collapse; table-layout:auto; font-size:15px; line-height:1.65;
+  }
+  .seed69k-markdown-preview th, .seed69k-markdown-preview td {
+    border:1px solid #8f8f8f; padding:4px 6px; text-align:right; vertical-align:top;
+    white-space:pre-wrap; overflow-wrap:anywhere;
+  }
+  .seed69k-markdown-preview th { background:#f0eee8; font-weight:800; }
+  .seed69k-ocr-fill {
+    background:#ffc107 !important; color:#160309 !important; border-color:#fff !important;
+    font-weight:800 !important; white-space:nowrap;
+  }
+  .seed69k-ocr-fill:disabled { opacity:.58; cursor:wait; }
+  .seed69k-safe-pre {
+    margin:0; white-space:pre-wrap; overflow-wrap:anywhere; direction:rtl;
+    text-align:right; font:16px/1.8 Vazirmatn,Tahoma,sans-serif;
+  }
+  .seed69k-ocr-textarea {
+    width:100%; min-height:52px; box-sizing:border-box; resize:vertical; overflow-y:auto; direction:rtl; text-align:right;
+    scrollbar-gutter:stable;
+    color:#fff; background:#160309; border:1px solid rgba(255,255,255,.28); border-radius:8px;
+    padding:10px 12px; font-size:18px !important; line-height:1.9 !important;
+  }
+  .seed69k-ocr-actions { display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-start; margin-top:6px; }
+  .seed69k-ocr-actions button {
+    border-radius:7px; border:1px solid rgba(255,255,255,.25); background:#3a1020; color:#fff;
+    padding:4px 8px; font-size:13px !important;
+  }
+  .seed69k-ocr-inline-status {
+    flex:1 0 100%; width:100%; max-width:none; min-width:0; margin:0; align-self:center;
+    color:#69f0ae; font-size:11px !important; line-height:1.5 !important;
+    direction:rtl; text-align:right; white-space:normal; overflow:visible; text-overflow:clip;
+    overflow-wrap:anywhere;
+  }
+  .seed69k-stage.seed69k-show-boxes .seed69k-layout-box,
+  .seed69k-stage.seed69k-edit-mode .seed69k-layout-box {
+    border-color:rgba(0,229,255,.75); background:transparent;
+  }
+  .seed69k-stage.seed69k-show-boxes .seed69k-layout-box.seed69k-overlapping,
+  .seed69k-stage.seed69k-edit-mode .seed69k-layout-box.seed69k-overlapping {
+    border-color:rgba(255,43,43,.95); box-shadow:0 0 0 1px rgba(255,43,43,.45);
+  }
+  .seed69k-overlap-area {
+    display:none; position:absolute; box-sizing:border-box; pointer-events:none; z-index:1;
+    background:rgba(255,0,0,.34); border:1px solid rgba(255,0,0,.82);
+    mix-blend-mode:multiply;
+  }
+  .seed69k-stage.seed69k-show-boxes .seed69k-overlap-area,
+  .seed69k-stage.seed69k-edit-mode .seed69k-overlap-area {
+    display:block;
+  }
+  .seed69k-stage.seed69k-edit-mode { user-select:none; cursor:crosshair; }
+  .seed69k-stage.seed69k-edit-mode .seed69k-layout-box { cursor:move; }
+  .seed69k-stage.seed69k-edit-mode .seed69k-layout-tip { display:none !important; }
+  .seed69k-layout-box.seed69k-selected {
+    border-color:#ffc107 !important; background:rgba(255,193,7,.18) !important; z-index:10;
+    box-shadow:0 0 0 2px rgba(0,0,0,.75), 0 0 22px rgba(255,193,7,.65) !important;
+  }
+  .seed69k-box-label {
+    display:none; position:absolute; left:calc(100% + 3px); top:-1px; direction:ltr; white-space:nowrap;
+    background:rgba(255,193,7,.82); color:#160309; border:1px solid rgba(0,0,0,.28);
+    border-radius:3px; padding:0 3px; font-size:9px !important; line-height:1.15 !important; font-weight:700;
+    max-width:none; overflow:visible; text-overflow:clip;
+    pointer-events:none; z-index:12;
+  }
+  .seed69k-layout-box.seed69k-selected .seed69k-box-label,
+  .seed69k-stage.seed69k-show-boxes .seed69k-layout-box .seed69k-box-label {
+    display:block;
+  }
+  .seed69k-resize-handle {
+    display:none; position:absolute; width:9px; height:9px;
+    border:1px solid #fff; border-radius:50%; background:#ff2b2b;
+    z-index:20; pointer-events:auto; touch-action:none;
+  }
+  .seed69k-resize-handle.seed69k-corner-nw { left:-5px; top:-5px; cursor:nwse-resize; }
+  .seed69k-resize-handle.seed69k-corner-ne { right:-5px; top:-5px; cursor:nesw-resize; }
+  .seed69k-resize-handle.seed69k-corner-sw { left:-5px; bottom:-5px; cursor:nesw-resize; }
+  .seed69k-resize-handle.seed69k-corner-se { right:-5px; bottom:-5px; cursor:nwse-resize; }
+  .seed69k-layout-box.seed69k-selected .seed69k-resize-handle { display:block; }
+  /* seed69k-full-content-visibility-v1 */
+  /* seed69k-zoom-rotation-state-v2 */
+  .seed69k-floating-editor .seed69k-ocr-actions { position:relative !important; bottom:auto !important; }
+  .seed69k-floating-editor .seed69k-ocr-textarea { display:block; }
+  /* seed69k-viewer-controls-dynamic-mount-v1 */
+  .seed69k-zoom-controls { display:inline-flex !important; align-items:center; gap:4px; direction:ltr; }
+  /* seed69k-floating-editor-scroll-stability-v1 */
+  .seed69k-floating-editor { overscroll-behavior:contain; }
+  .seed69k-floating-editor .seed69k-ocr-textarea, .seed69k-floating-editor .seed69k-markdown-preview { overscroll-behavior:contain; }
+  /* seed69k-floating-editor-bounded-height-v1 */
+  .seed69k-floating-editor { height:auto; max-height:560px; }
+  /* seed69k-floating-editor-minimal-v1 */
+  /* Keep the initial editor compact, but let an explicit corner resize win. */
+  .seed69k-floating-editor { height:auto; max-height:min(58vh, 420px); }
+  .seed69k-floating-editor .seed69k-ocr-textarea { max-height:none; overflow:auto; }
+  /* seed69k-floating-editor-tight-v1 */
+  .seed69k-floating-editor { max-width:360px; }
+  .seed69k-floating-editor .seed69k-markdown-preview { max-height:120px !important; overflow:auto !important; }
+  /* seed69k-hide-redundant-edit-toggle-v1 */
+  .seed69k-layout-toolbar > label:has(.seed69k-edit-input) { display:none !important; }
+  /* seed69k-hide-layout-toolbar-v1 */
+  .seed69k-layout-toolbar { display:none !important; }
+  /* seed69k-dragged-context-panel-stability-v1 */
+  .seed69k-floating-editor { transform:none; }
+  /* seed69k-context-corner-resize-v2 */
+  /* The panel owns the four corner grips; its OCR region fills the remaining height. */
+  .seed69k-floating-editor { resize:none; overflow:hidden; flex-direction:column; }
+  .seed69k-floating-editor .seed69k-ocr-editor {
+    display:flex; flex:1 1 auto; min-height:0; flex-direction:column; overflow:hidden;
+  }
+  .seed69k-floating-editor .seed69k-ocr-textarea {
+    display:block; flex:1 1 0; width:100%; min-height:52px; height:auto;
+    max-height:none; overflow:auto; resize:none;
+  }
+  .seed69k-context-resize-grip { display:block; opacity:.95; pointer-events:auto; }
+  .seed69k-context-resize-grip:hover { background:#ffc107 !important; }
+  .seed69k-ocr-textarea-wrap {
+    position:relative; display:flex; flex:1 1 0; min-width:0; min-height:52px;
+  }
+  .seed69k-ocr-textarea-wrap .seed69k-ocr-textarea { width:100%; height:100%; }
+  .seed69k-textarea-resize-grip {
+    display:block; position:absolute; width:12px; height:12px; box-sizing:border-box;
+    border:2px solid #00e5ff; border-radius:50%; background:#160309;
+    z-index:35; pointer-events:auto; touch-action:none; user-select:none;
+  }
+  .seed69k-textarea-resize-grip:hover { background:#00e5ff !important; }
+  .seed69k-textarea-resize-nw { left:3px; top:3px; cursor:nwse-resize; }
+  .seed69k-textarea-resize-ne { right:3px; top:3px; cursor:nesw-resize; }
+  .seed69k-textarea-resize-sw { left:3px; bottom:3px; cursor:nesw-resize; }
+  .seed69k-textarea-resize-se { right:3px; bottom:3px; cursor:nwse-resize; }
+  /* seed69k-radial-review-clearance-v1 */
+  .seed69k-floating-review .seed69k-radial-item, .seed69k-floating-review .seed69k-radial-toggle { z-index:20!important; }
+  /* seed69k-argilla-header-controls-layer-v1 */
+  /* Native Argilla filter/mode/queue controls stay above the fixed canvas iframe. */
+  /* seed69k-argilla-header-bbox-pointer-passthrough-v1 */
+  /* Header containers do not intercept canvas bbox clicks; controls remain interactive. */
+  /* seed69k-cmd-ctrl-a-select-all-v1 */
+  .seed69k-stage.seed69k-all-selected .seed69k-resize-handle { display:none; }
+  .seed69k-layout-box.seed69k-selected { cursor:pointer; }
+  /* seed69k-restore-bbox-resize-handles-v1 */
+  /* Resize grips remain available for a single selected bbox. */
+  /* seed69k-delete-all-selected-v1 */
+  /* Delete acts on the full Cmd/Ctrl+A selection before single-bbox delete. */
+  /* seed69k-radial-submit-pointer-guard-v1 */
+  /* seed69k-submit-queue-refresh-v1 */
+  /* seed69k-submit-queue-refresh-click-v1 */
+  /* seed69k-immediate-layout-persistence-v1 */
+  /* seed69k-empty-layout-override-v1 */
+  /* seed69k-submit-queue-parent-timer-v1 */
+  /* seed69k-submit-queue-delegated-listener-v1 */
+  /* seed69k-submit-queue-mutation-observer-v1 */
+  /* seed69k-submit-queue-history-restore-v1 */
+</style>
+<div id="seed69k-root" class="seed69k-wrap">
+  <div class="seed69k-frame">
+    <div class="seed69k-rotation-canvas">
+      <div class="seed69k-stage">
+        <img src="" alt="صفحهٔ PDF" loading="eager" />
+      </div>
+    </div>
+  </div>
+  <div class="seed69k-layout-toolbar">
+    <span class="seed69k-layout-help">برای ویرایش: روی bbox کلیک کنید، جابه‌جا کنید، از گوشهٔ قرمز تغییر اندازه دهید، یا کلاس را عوض کنید.</span>
+    <label><input class="seed69k-show-input" type="checkbox" checked /> نمایش همهٔ ناحیه‌ها</label>
+    <label><input class="seed69k-edit-input" type="checkbox" /> ویرایش ناحیه</label>
+    <span class="seed69k-zoom-controls" aria-label="بزرگ‌نمایی و چرخش سند"><button type="button" class="seed69k-zoom-out" title="کوچک‌نمایی سند" aria-label="کوچک‌نمایی سند">−</button><span class="seed69k-zoom-value">۱۰۰٪</span><button type="button" class="seed69k-zoom-in" title="بزرگ‌نمایی سند" aria-label="بزرگ‌نمایی سند">+</button><button type="button" class="seed69k-rotate-left" title="چرخش ۹۰ درجه به چپ" aria-label="چرخش ۹۰ درجه به چپ">↺</button><span class="seed69k-rotation-value" aria-live="polite">۰°</span><button type="button" class="seed69k-rotate-right" title="چرخش ۹۰ درجه به راست" aria-label="چرخش ۹۰ درجه به راست">↻</button></span>
+    <select class="seed69k-class-select">
+      <option>Text</option><option>Title</option><option>Header</option><option>Section</option><option>Footer</option>
+      <option>Table</option><option>Equation</option><option>Figure</option><option>Caption</option><option>ListItem</option><option>InputForm</option><option>Signature</option><option>Logo</option>
+    </select>
+    <div class="seed69k-class-palette"></div>
+    <button type="button" class="seed69k-add-button">افزودن با کشیدن</button>
+    <button type="button" class="seed69k-delete-button">حذف انتخاب‌شده</button>
+    <button type="button" class="seed69k-save-button">ذخیرهٔ ویرایش‌ها</button>
+    <span class="seed69k-layout-status"></span>
+  </div>
+  <div class="seed69k-layout-meta"></div>
+  <a class="seed69k-layout-link" href="#" target="_blank" rel="noopener noreferrer">
+    باز کردن تصویر با اندازهٔ اصلی
+  </a>
+</div>
+<script>
+(function(){
+  var root = (document.currentScript && document.currentScript.previousElementSibling);
+  if (!root || !root.classList || !root.classList.contains('seed69k-wrap')) {
+    root = document.currentScript && document.currentScript.parentElement && document.currentScript.parentElement.querySelector('.seed69k-wrap');
+  }
+  if (!root) {
+    var candidates = Array.prototype.slice.call(document.querySelectorAll('.seed69k-wrap'));
+    root = candidates.find(function(candidate) {
+      var candidateStage = candidate.querySelector('.seed69k-stage');
+      return candidateStage && candidateStage.dataset.layoutRendered !== '1';
+    });
+  }
+  if (!root) return;
+  var rec = (typeof record !== 'undefined') ? record : (window.record || {});
+  var field = (rec.fields && rec.fields.label) || {};
+  if (field && Array.isArray(field.items)) {
+    field = {
+      src: field.src || (rec.fields && rec.fields.image) || '',
+      page_id: rec.external_id || rec.id || '',
+      layout_model: 'merged-layout-ocr',
+      layout_box_count: field.items.length,
+      layout_label_summary: Array.from(new Set(field.items.map(function(b){ return b.label || 'Text'; }))).join(', '),
+      layout_boxes_json: JSON.stringify(field.items)
+    };
+  }
+  function seed69kParsePythonishField(value) {
+    if (!value || typeof value !== 'string') return value || {};
+    var out = {};
+    function grabString(key) {
+      var re = new RegExp("'" + key + "'\\s*:\\s*'((?:\\\\'|[^'])*)'");
+      var m = value.match(re);
+      return m ? m[1].replace(/\\'/g, "'").replace(/\\\\/g, '\\') : '';
+    }
+    function grabNumber(key) {
+      var re = new RegExp("'" + key + "'\\s*:\\s*([0-9]+(?:\\.[0-9]+)?)");
+      var m = value.match(re);
+      return m ? Number(m[1]) : null;
+    }
+    out.src = grabString('src');
+    out.page_id = grabString('page_id');
+    out.layout_model = grabString('layout_model');
+    out.layout_label_summary = grabString('layout_label_summary');
+    out.layout_boxes_json = grabString('layout_boxes_json');
+    var count = grabNumber('layout_box_count');
+    if (count !== null) out.layout_box_count = count;
+    return out;
+  }
+  field = seed69kParsePythonishField(field);
+  var pageId = field.page_id || rec.external_id || rec.id || (rec.metadata && rec.metadata.page_id) || '';
+  var stage = root.querySelector('.seed69k-stage');
+  if (!stage || stage.dataset.layoutRendered === '1') return;
+  stage.dataset.layoutRendered = '1';
+  var img = stage.querySelector('img');
+  /* local-inline-images-v1: imports embed image bytes, with no external fetch. */
+  if (img && field.src) { img.dataset.authSource = field.src; img.src = field.src; }
+  var link = root.querySelector('.seed69k-layout-link');
+  if (link && field.src) link.href = field.src;
+  var meta = root.querySelector('.seed69k-layout-meta');
+  if (meta) {
+    meta.textContent = 'مدل چیدمان: ' + (field.layout_model || '—') +
+      ' · تعداد ناحیه‌ها: ' + (field.layout_box_count == null ? '—' : field.layout_box_count) +
+      ' · برچسب‌ها: ' + (field.layout_label_summary || '—');
+  }
+  var showToggle = root.querySelector('.seed69k-show-input');
+  var editToggle = root.querySelector('.seed69k-edit-input');
+  if (editToggle && editToggle.parentElement) editToggle.parentElement.style.display = 'none';
+  var classSelect = root.querySelector('.seed69k-class-select');
+  var addButton = root.querySelector('.seed69k-add-button');
+  var deleteButton = root.querySelector('.seed69k-delete-button');
+  var saveButton = root.querySelector('.seed69k-save-button');
+  var status = root.querySelector('.seed69k-layout-status');
+  var viewerControls = root.querySelector('.seed69k-zoom-controls');
+  if (!viewerControls) {
+    var viewerToolbar = root.querySelector('.seed69k-layout-toolbar');
+    if (viewerToolbar) {
+      viewerControls = document.createElement('span');
+      viewerControls.className = 'seed69k-zoom-controls';
+      viewerControls.setAttribute('aria-label', 'بزرگ‌نمایی و چرخش سند');
+      viewerControls.innerHTML = '<button type="button" class="seed69k-zoom-out">−</button><span class="seed69k-zoom-value">۱۰۰٪</span><button type="button" class="seed69k-zoom-in">+</button><button type="button" class="seed69k-rotate-left">↺</button><span class="seed69k-rotation-value" aria-live="polite">۰°</span><button type="button" class="seed69k-rotate-right">↻</button>';
+      var viewerSelect = viewerToolbar.querySelector('.seed69k-class-select');
+      viewerToolbar.insertBefore(viewerControls, viewerSelect || viewerToolbar.firstChild);
+    }
+  }
+  var zoomInButton = root.querySelector('.seed69k-zoom-in');
+  var zoomOutButton = root.querySelector('.seed69k-zoom-out');
+  var zoomValue = root.querySelector('.seed69k-zoom-value');
+  var rotateLeftButton = root.querySelector('.seed69k-rotate-left');
+  var rotateRightButton = root.querySelector('.seed69k-rotate-right');
+  var rotationValue = root.querySelector('.seed69k-rotation-value');
+  var classPalette = root.querySelector('.seed69k-class-palette');
+  var classOptions = ['Text','Title','Header','Section','Footer','Table','Equation','Figure','Caption','ListItem','InputForm','Signature','Logo'];
+  var classDisplay = {Text:'متن',Title:'تیتر',Header:'سرصفحه',Section:'بخش',Footer:'پاصفحه',Table:'جدول',Equation:'فرمول',Figure:'تصویر',Caption:'شرح تصویر',ListItem:'لیست',InputForm:'فرم ورودی',Signature:'امضا',Logo:'آرم'};
+  if (classSelect) Array.prototype.slice.call(classSelect.options).forEach(function(option){ option.value = option.value || option.textContent; option.textContent = classDisplay[option.value] || option.textContent; });
+  var labelMap = {
+    'SectionHeader':'Section',
+    'Section-Header':'Section',
+    'PageHeader':'Title',
+    'Page-Header':'Title',
+    'PageFooter':'Footer',
+    'Page-Footer':'Footer',
+    'Picture':'Figure',
+    'Diagram':'Figure',
+    'ListGroup':'ListItem',
+    'List-Group':'ListItem',
+    'ChemicalBlock':'Equation',
+    'Chemical-Block':'Equation'
+  };
+  var floatingEditor = document.createElement('div');
+  floatingEditor.className = 'seed69k-floating-editor';
+  floatingEditor.dataset.seed69kRoot = 'pending';
+  floatingEditor.innerHTML = '<div class="seed69k-editor-drag-handle" style="cursor:move;touch-action:none;user-select:none;margin:-2px -2px 8px;padding:6px 8px;border-radius:7px;background:#3a1020;color:#ffc107;font-size:12px;font-weight:800;text-align:center;position:sticky;top:0;z-index:6" title="جابجایی پنجره">↔ جابجایی پنجره</div><details class="seed69k-class-details" style="margin:0 0 6px"><summary style="cursor:pointer;color:#ffc107;font-size:12px;font-weight:700;user-select:none">نوع ناحیه</summary><div class="seed69k-class-palette seed69k-floating-palette" style="margin-top:6px"></div></details><div class="seed69k-ocr-editor" style="margin-top:0"><label>متن‌خوانی این ناحیه</label><div class="seed69k-ocr-textarea-wrap"><textarea class="seed69k-ocr-textarea" rows="1" placeholder="متن این ناحیه را اینجا اصلاح کنید"></textarea><span class="seed69k-textarea-resize-grip seed69k-textarea-resize-nw" data-corner="nw" aria-label="تغییر اندازهٔ متن از گوشهٔ nw" title="تغییر اندازهٔ متن از گوشهٔ nw"></span><span class="seed69k-textarea-resize-grip seed69k-textarea-resize-ne" data-corner="ne" aria-label="تغییر اندازهٔ متن از گوشهٔ ne" title="تغییر اندازهٔ متن از گوشهٔ ne"></span><span class="seed69k-textarea-resize-grip seed69k-textarea-resize-sw" data-corner="sw" aria-label="تغییر اندازهٔ متن از گوشهٔ sw" title="تغییر اندازهٔ متن از گوشهٔ sw"></span><span class="seed69k-textarea-resize-grip seed69k-textarea-resize-se" data-corner="se" aria-label="تغییر اندازهٔ متن از گوشهٔ se" title="تغییر اندازهٔ متن از گوشهٔ se"></span></div><div class="seed69k-ocr-actions"><button type="button" class="seed69k-ocr-fill" aria-label="اجرای Surya OCR 2 روی ناحیه انتخاب‌شده">⚡ OCR · Surya 2</button><button type="button" class="seed69k-ocr-bina" aria-label="اجرای بینا ۰.۱ روی ناحیه انتخاب‌شده">⚡ OCR · بینا</button><button type="button" class="seed69k-ocr-gemini" style="display:none" aria-hidden="true" aria-label="اجرای Gemini OCR برای جدول روی ناحیه انتخاب‌شده">⚡ OCR · Gemini (برای جدول)</button><span class="seed69k-ocr-inline-status" aria-live="polite"></span></div></div>';
+  floatingEditor.querySelectorAll('button').forEach(function(button) {
+    if (/Gemini|بینا|Bina|Surya|سوریا/i.test(button.textContent)) button.remove();
+  });
+
+  var inlineStatus = floatingEditor.querySelector('.seed69k-ocr-inline-status');
+  function setStatus(text) {
+    if (status) status.textContent = text || '';
+    if (inlineStatus) { inlineStatus.textContent = text || ''; inlineStatus.title = text || ''; }
+  }
+  var classDetails = floatingEditor.querySelector('.seed69k-class-details');
+  if (classDetails) classDetails.addEventListener('toggle', function(){ placeFloatingEditor(); });
+  var toolbar = root.querySelector('.seed69k-layout-toolbar');
+  if (toolbar) toolbar.style.display = 'none';
+  if (toolbar) {
+    ['pointerdown','mousedown','click','dblclick','touchstart'].forEach(function(evtName) {
+      toolbar.addEventListener(evtName, function(ev){ ev.stopPropagation(); });
+    });
+  }
+  var viewerStorageRoute = '';
+  try {
+    viewerStorageRoute = (window.parent && window.parent.location && window.parent.location.pathname) || window.location.pathname || '';
+  } catch (e) { viewerStorageRoute = window.location.pathname || ''; }
+  var viewerStoragePrefix = 'seed69k:viewer:v2:' + viewerStorageRoute + ':' + pageId;
+  function loadViewerNumber(name, fallback, minimum, maximum) {
+    try {
+      var raw = window.localStorage.getItem(viewerStoragePrefix + ':' + name);
+      if (raw === null || raw === '') return fallback;
+      var value = Number(raw);
+      return isFinite(value) ? Math.max(minimum, Math.min(maximum, value)) : fallback;
+    } catch (e) { return fallback; }
+  }
+  function persistViewerNumber(name, value) {
+    try { window.localStorage.setItem(viewerStoragePrefix + ':' + name, String(value)); } catch (e) {}
+  }
+  var zoomLevel = loadViewerNumber('zoom', 1, 0.5, 3);
+  var zoomUserChosen = false;
+  var zoomBaseWidth = null;
+  var zoomDocumentViewport = root.querySelector('.seed69k-frame');
+  var rotationCanvas = root.querySelector('.seed69k-rotation-canvas');
+  var rotationDegrees = loadViewerNumber('rotation', 0, 0, 359);
+  rotationDegrees = normalizeDocumentRotation(rotationDegrees);
+  function captureDocumentCenter() {
+    if (!zoomDocumentViewport) return {x:0.5, y:0.5};
+    var scrollWidth = Math.max(1, zoomDocumentViewport.scrollWidth);
+    var scrollHeight = Math.max(1, zoomDocumentViewport.scrollHeight);
+    var maxScrollX = Math.max(0, scrollWidth - zoomDocumentViewport.clientWidth);
+    var maxScrollY = Math.max(0, scrollHeight - zoomDocumentViewport.clientHeight);
+    return {
+      x:maxScrollX > 0 ? (zoomDocumentViewport.scrollLeft + zoomDocumentViewport.clientWidth / 2) / scrollWidth : 0.5,
+      y:maxScrollY > 0 ? (zoomDocumentViewport.scrollTop + zoomDocumentViewport.clientHeight / 2) / scrollHeight : 0.5
+    };
+  }
+  function restoreDocumentCenter(center) {
+    if (!zoomDocumentViewport) return;
+    center = center || {x:0.5, y:0.5};
+    function restore() {
+      var scrollWidth = Math.max(1, zoomDocumentViewport.scrollWidth);
+      var scrollHeight = Math.max(1, zoomDocumentViewport.scrollHeight);
+      var maxScrollX = Math.max(0, scrollWidth - zoomDocumentViewport.clientWidth);
+      var maxScrollY = Math.max(0, scrollHeight - zoomDocumentViewport.clientHeight);
+      zoomDocumentViewport.scrollLeft = maxScrollX > 0
+        ? Math.max(0, Math.min(maxScrollX, center.x * scrollWidth - zoomDocumentViewport.clientWidth / 2))
+        : 0;
+      zoomDocumentViewport.scrollTop = maxScrollY > 0
+        ? Math.max(0, Math.min(maxScrollY, center.y * scrollHeight - zoomDocumentViewport.clientHeight / 2))
+        : 0;
+    }
+    restore();
+    window.requestAnimationFrame(function() {
+      restore();
+      window.requestAnimationFrame(restore);
+    });
+  }
+  function fitDocumentViewer(preservedCenter) {
+    if (!zoomDocumentViewport || !img) return;
+    preservedCenter = preservedCenter || captureDocumentCenter();
+    var hostHeight = Math.max(320, window.innerHeight || 0);
+    try {
+      var hostFrame = window.frameElement;
+      var recordScroller = hostFrame && hostFrame.closest && hostFrame.closest('.record__content');
+      if (recordScroller) {
+        recordScroller.style.overflowAnchor = 'none';
+      }
+    } catch (e) {}
+    var viewerHeight = Math.max(280, Math.round(hostHeight - 12));
+    zoomDocumentViewport.style.height = viewerHeight + 'px';
+    zoomDocumentViewport.style.minHeight = viewerHeight + 'px';
+    zoomDocumentViewport.style.maxHeight = viewerHeight + 'px';
+    zoomDocumentViewport.style.overflow = 'auto';
+    zoomDocumentViewport.style.overflowAnchor = 'none';
+    zoomDocumentViewport.style.direction = 'ltr';
+    var maxWidth = Math.max(1, zoomDocumentViewport.clientWidth - 28);
+    var maxHeight = Math.max(1, zoomDocumentViewport.clientHeight - 20);
+    var naturalWidth = Math.max(1, img.naturalWidth || img.getBoundingClientRect().width || 1);
+    var naturalHeight = Math.max(1, img.naturalHeight || img.getBoundingClientRect().height || 1);
+    var measuredBaseWidth = Math.max(1, Math.min(maxWidth, maxHeight * naturalWidth / naturalHeight));
+    if (zoomBaseWidth === null || !zoomUserChosen) zoomBaseWidth = measuredBaseWidth;
+    stage.style.willChange = 'width, transform';
+    var targetWidth = Math.round(zoomBaseWidth * zoomLevel);
+    var targetHeight = targetWidth * naturalHeight / naturalWidth;
+    stage.style.width = targetWidth + 'px';
+    stage.style.minWidth = '0';
+    stage.style.transformOrigin = 'center center';
+    var quarterTurn = Math.abs(rotationDegrees) % 180 === 90;
+    var canvasWidth = quarterTurn ? targetHeight : targetWidth;
+    var canvasHeight = quarterTurn ? targetWidth : targetHeight;
+    if (rotationCanvas) {
+      rotationCanvas.style.width = Math.max(1, Math.round(canvasWidth)) + 'px';
+      rotationCanvas.style.height = Math.max(1, Math.round(canvasHeight)) + 'px';
+    }
+    stage.style.transform = 'translate(-50%, -50%) rotate(' + rotationDegrees + 'deg)';
+    zoomDocumentViewport.style.alignItems = canvasHeight <= zoomDocumentViewport.clientHeight ? 'center' : 'flex-start';
+    zoomDocumentViewport.style.justifyContent = canvasWidth <= zoomDocumentViewport.clientWidth ? 'center' : 'flex-start';
+    restoreDocumentCenter(preservedCenter);
+  }
+  function applyDocumentZoom(nextLevel, userAction) {
+    var preservedCenter = captureDocumentCenter();
+    zoomLevel = Math.max(0.5, Math.min(3, nextLevel));
+    if (userAction) {
+      zoomUserChosen = true;
+      persistViewerNumber('zoom', zoomLevel);
+    }
+    fitDocumentViewer(preservedCenter);
+    if (zoomValue) zoomValue.textContent = Math.round(zoomLevel * 100).toLocaleString('fa-IR') + '٪';
+    hideDetachedTips();
+    placeFloatingEditor();
+  }
+  function normalizeDocumentRotation(value) {
+    var normalized = Number(value) || 0;
+    normalized = ((normalized % 360) + 360) % 360;
+    return normalized === 0 ? 0 : normalized;
+  }
+  function applyDocumentRotation(nextRotation) {
+    var preservedCenter = captureDocumentCenter();
+    rotationDegrees = normalizeDocumentRotation(nextRotation);
+    persistViewerNumber('rotation', rotationDegrees);
+    fitDocumentViewer(preservedCenter);
+    if (rotationValue) rotationValue.textContent = rotationDegrees.toLocaleString('fa-IR') + '°';
+    hideDetachedTips();
+    placeFloatingEditor();
+  }
+  function initializeFitDocumentViewer() {
+    applyDocumentZoom(zoomLevel, false);
+    if (rotationValue) rotationValue.textContent = rotationDegrees.toLocaleString('fa-IR') + '°';
+  }
+  if (img && img.complete && img.naturalWidth) window.setTimeout(initializeFitDocumentViewer, 0);
+  else if (img) img.addEventListener('load', initializeFitDocumentViewer, {once:true});
+  [0, 120, 420, 1000].forEach(function(delay) {
+    window.setTimeout(initializeFitDocumentViewer, delay);
+  });
+  window.addEventListener('resize', function() {
+    if (zoomUserChosen) { placeFloatingEditor(); return; }
+    initializeFitDocumentViewer();
+  });
+  [zoomInButton, zoomOutButton, rotateLeftButton, rotateRightButton].forEach(function(button) {
+    if (!button) return;
+    button.addEventListener('pointerdown', function(ev){ ev.preventDefault(); });
+    button.addEventListener('mousedown', function(ev){ ev.preventDefault(); });
+  });
+  if (zoomInButton) zoomInButton.addEventListener('click', function(ev){ ev.preventDefault(); applyDocumentZoom(zoomLevel + 0.25, true); });
+  if (zoomOutButton) zoomOutButton.addEventListener('click', function(ev){ ev.preventDefault(); applyDocumentZoom(zoomLevel - 0.25, true); });
+  if (rotateLeftButton) rotateLeftButton.addEventListener('click', function(ev){ ev.preventDefault(); applyDocumentRotation(rotationDegrees - 90); });
+  if (rotateRightButton) rotateRightButton.addEventListener('click', function(ev){ ev.preventDefault(); applyDocumentRotation(rotationDegrees + 90); });
+  floatingEditor.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+  floatingEditor.addEventListener('click', function(ev){ ev.stopPropagation(); });
+  var activeHoverTip = null;
+  function hideActiveHoverTip() {
+    if (activeHoverTip) activeHoverTip.style.display = 'none';
+    activeHoverTip = null;
+  }
+  function removeDetachedTips() {
+    hideActiveHoverTip();
+    Array.prototype.slice.call(document.querySelectorAll('.seed69k-layout-tip[data-seed69k-root="' + stage.dataset.layoutUid + '"]')).forEach(function(n){ n.remove(); });
+  }
+  function hideDetachedTips() {
+    hideActiveHoverTip();
+    Array.prototype.slice.call(document.querySelectorAll('.seed69k-layout-tip[data-seed69k-root="' + stage.dataset.layoutUid + '"]')).forEach(function(n){ n.style.display = 'none'; });
+  }
+  document.addEventListener('pointermove', function(ev) {
+    var box = ev.target && ev.target.closest && ev.target.closest('.seed69k-layout-box');
+    if (!box) hideActiveHoverTip();
+  }, true);
+  document.documentElement.addEventListener('mouseleave', hideActiveHoverTip, true);
+  window.addEventListener('blur', hideActiveHoverTip, true);
+  stage.dataset.layoutUid = stage.dataset.layoutUid || ('seed69k-' + Math.random().toString(36).slice(2));
+  floatingEditor.dataset.seed69kRoot = stage.dataset.layoutUid;
+  var editorHostDocument = document;
+  var editorHostWindow = window;
+  var editorFrameElement = null;
+  try {
+    if (window.parent && window.parent !== window && window.parent.document) {
+      editorHostDocument = window.parent.document;
+      editorHostWindow = window.parent;
+      editorFrameElement = window.frameElement;
+      var splitLeft = editorHostDocument.querySelector('.resizable-v.wrapper > .resizable-v__left');
+      var splitRight = editorHostDocument.querySelector('.resizable-v.wrapper > .resizable-v__right');
+      if (splitLeft && splitRight) {
+        splitLeft.style.minWidth = '0'; splitLeft.style.maxWidth = '100%';
+        splitLeft.style.width = '85%'; splitLeft.style.flex = '1 1 85%';
+        splitRight.style.minWidth = '240px'; splitRight.style.maxWidth = '360px';
+        splitRight.style.width = 'auto'; splitRight.style.flex = '0 0 auto';
+        splitRight.style.overflow = 'auto';
+      }
+      var portalStyle = editorHostDocument.getElementById('seed69k-editor-portal-scoped');
+      if (!portalStyle) {
+        portalStyle = editorHostDocument.createElement('style');
+        portalStyle.id = 'seed69k-editor-portal-scoped';
+        portalStyle.textContent = '.seed69k-floating-editor{display:none;position:fixed;z-index:2147483647;width:min(640px,calc(100vw - 16px));max-width:calc(100vw - 16px);height:auto;max-height:calc(100vh - 16px);overflow:hidden;flex-direction:column;align-items:stretch;box-sizing:border-box;scrollbar-gutter:stable;direction:rtl;background:rgba(22,3,9,.96);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:10px;padding:8px;box-shadow:0 14px 44px rgba(0,0,0,.55);font-family:"Vazirmatn",Tahoma,Arial,sans-serif}.seed69k-floating-title{color:#ffc107;font-size:12px;margin-bottom:5px}.seed69k-floating-editor .seed69k-class-palette{direction:ltr;display:flex;flex-wrap:wrap;align-items:center;gap:4px}.seed69k-floating-editor .seed69k-class-chip{border-radius:999px;padding:3px 7px;font-size:12px;background:#3a1020;color:#fff;cursor:pointer;border:1px solid rgba(255,255,255,.25)}.seed69k-floating-editor .seed69k-class-chip.seed69k-active{background:#ffc107;color:#160309;border-color:#fff;font-weight:800}.seed69k-floating-editor .seed69k-ocr-editor{display:flex;flex:1 1 auto;min-height:0;flex-direction:column;overflow:hidden;margin-top:8px;border-top:1px solid rgba(255,255,255,.18);padding-top:8px}.seed69k-floating-editor .seed69k-ocr-editor label{display:block;color:#9eefff;font-size:12px;margin-bottom:4px}.seed69k-floating-editor .seed69k-markdown-preview{max-height:min(30vh,320px);overflow:auto;scrollbar-gutter:stable;margin:0 0 8px;padding:10px;box-sizing:border-box;direction:rtl;color:#171717;background:#fff;border:1px solid rgba(255,255,255,.28);border-radius:8px}.seed69k-floating-editor .seed69k-markdown-preview[hidden]{display:none!important}.seed69k-floating-editor .seed69k-markdown-preview table{width:100%;border-collapse:collapse;table-layout:auto;font-size:15px;line-height:1.65}.seed69k-floating-editor .seed69k-markdown-preview th,.seed69k-floating-editor .seed69k-markdown-preview td{border:1px solid #8f8f8f;padding:4px 6px;text-align:right;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere}.seed69k-floating-editor .seed69k-markdown-preview th{background:#f0eee8;font-weight:800}.seed69k-floating-editor .seed69k-ocr-fill{background:#ffc107!important;color:#160309!important;border-color:#fff!important;font-weight:800!important;white-space:nowrap}.seed69k-floating-editor .seed69k-ocr-fill:disabled{opacity:.58;cursor:wait}.seed69k-floating-editor .seed69k-ocr-bina{background:#e65100!important;color:#fff!important;border-color:#ff9800!important;font-weight:800!important;white-space:nowrap}.seed69k-floating-editor .seed69k-ocr-bina:disabled{opacity:.58;cursor:wait}.seed69k-floating-editor .seed69k-ocr-gemini{background:#448aff!important;color:#fff!important;border-color:#82b1ff!important;font-weight:800!important;white-space:nowrap}.seed69k-floating-editor .seed69k-ocr-gemini:disabled{opacity:.58;cursor:wait}.seed69k-floating-editor .seed69k-safe-pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;direction:rtl;text-align:right;font:16px/1.8 Vazirmatn,Tahoma,sans-serif}.seed69k-floating-editor .seed69k-ocr-textarea-wrap{position:relative;display:flex;flex:1 1 0;min-width:0;min-height:52px}.seed69k-floating-editor .seed69k-ocr-textarea{display:block;flex:1 1 auto;width:100%;height:100%;min-height:52px;max-height:none;box-sizing:border-box;resize:none;overflow:auto;direction:rtl;text-align:right;color:#fff;background:#160309;border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:10px 12px;font-size:18px;line-height:1.9}.seed69k-floating-editor .seed69k-textarea-resize-grip{display:block;position:absolute;width:12px;height:12px;box-sizing:border-box;border:2px solid #00e5ff;border-radius:50%;background:#160309;z-index:35;pointer-events:auto;touch-action:none;user-select:none}.seed69k-floating-editor .seed69k-textarea-resize-nw{left:3px;top:3px;cursor:nwse-resize}.seed69k-floating-editor .seed69k-textarea-resize-ne{right:3px;top:3px;cursor:nesw-resize}.seed69k-floating-editor .seed69k-textarea-resize-sw{left:3px;bottom:3px;cursor:nesw-resize}.seed69k-floating-editor .seed69k-textarea-resize-se{right:3px;bottom:3px;cursor:nwse-resize}.seed69k-floating-editor .seed69k-ocr-actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-start;margin-top:6px}position:relative !important;bottom:auto !important;.seed69k-floating-editor .seed69k-ocr-actions button{border-radius:7px;border:1px solid rgba(255,255,255,.25);background:#3a1020;color:#fff;padding:4px 8px;font-size:13px}.seed69k-floating-editor .seed69k-ocr-inline-status{flex:1 0 100%;width:100%;max-width:none;min-width:0;margin:0;align-self:center;color:#69f0ae;font-size:11px;line-height:1.5;direction:rtl;text-align:right;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere}';
+        editorHostDocument.head.appendChild(portalStyle);
+      }
+      Array.prototype.slice.call(editorHostDocument.querySelectorAll('.seed69k-floating-editor[data-seed69k-portal="1"]')).forEach(function(node){ node.remove(); });
+      floatingEditor.dataset.seed69kPortal = '1';
+    }
+  } catch (portalError) {
+    editorHostDocument = document;
+    editorHostWindow = window;
+    editorFrameElement = null;
+  }
+  if (editorHostDocument !== document) {
+    /* Keep the original editor node. Rebuilding it with innerHTML disconnects
+       the textarea and OCR controls from the stateful handlers below. */
+    try { floatingEditor = editorHostDocument.adoptNode(floatingEditor); } catch (e) {}
+    floatingEditor.dataset.seed69kPortal = '1';
+    floatingEditor.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+    floatingEditor.addEventListener('click', function(ev){ ev.stopPropagation(); });
+  }
+  editorHostDocument.body.appendChild(floatingEditor);
+  var parentZoomControls = root.querySelector('.seed69k-zoom-controls');
+  if (parentZoomControls && editorHostDocument !== document) {
+    Array.prototype.slice.call(
+      editorHostDocument.querySelectorAll('.seed69k-parent-zoom-controls')
+    ).forEach(function(stale) { stale.remove(); });
+    parentZoomControls.classList.add('seed69k-parent-zoom-controls');
+    parentZoomControls.style.position = 'fixed';
+    parentZoomControls.style.left = '16px';
+    parentZoomControls.style.top = 'auto';
+    parentZoomControls.style.bottom = '16px';
+    parentZoomControls.style.transform = 'none';
+    parentZoomControls.style.zIndex = '2147483646';
+    parentZoomControls.style.display = 'inline-flex';
+    parentZoomControls.style.alignItems = 'center';
+    parentZoomControls.style.gap = '6px';
+    parentZoomControls.style.direction = 'ltr';
+    parentZoomControls.style.padding = '6px 8px';
+    parentZoomControls.style.border = '1px solid rgba(255,255,255,.35)';
+    parentZoomControls.style.borderRadius = '9px';
+    parentZoomControls.style.background = '#250711';
+    parentZoomControls.style.boxShadow = '0 5px 18px rgba(0,0,0,.38)';
+    Array.prototype.slice.call(parentZoomControls.querySelectorAll('button')).forEach(function(button) {
+      button.style.width = '32px';
+      button.style.height = '32px';
+      button.style.padding = '0';
+      button.style.border = '1px solid rgba(255,255,255,.35)';
+      button.style.borderRadius = '7px';
+      button.style.background = '#3a1020';
+      button.style.color = '#fff';
+      button.style.fontSize = '20px';
+      button.style.fontWeight = '800';
+      button.style.lineHeight = '1';
+    });
+    if (zoomValue) {
+      zoomValue.style.minWidth = '50px';
+      zoomValue.style.color = '#fff';
+      zoomValue.style.textAlign = 'center';
+      zoomValue.style.fontSize = '13px';
+    }
+    if (rotationValue) {
+      rotationValue.style.minWidth = '42px';
+      rotationValue.style.color = '#fff';
+      rotationValue.style.textAlign = 'center';
+      rotationValue.style.fontSize = '13px';
+    }
+    editorHostDocument.body.appendChild(parentZoomControls);
+    window.addEventListener('unload', function() {
+      if (parentZoomControls && parentZoomControls.isConnected) parentZoomControls.remove();
+    }, {once:true});
+  }
+  if (editorFrameElement) {
+    editorFrameElement.style.overflowAnchor = 'none';
+    editorFrameElement.style.setProperty('position', 'fixed', 'important');
+    editorFrameElement.style.setProperty('left', '0', 'important');
+    editorFrameElement.style.setProperty('right', '0', 'important');
+    editorFrameElement.style.setProperty('top', '98px', 'important');
+    editorFrameElement.style.setProperty('bottom', '0', 'important');
+    editorFrameElement.style.setProperty('width', '100vw', 'important');
+    editorFrameElement.style.setProperty('height', 'calc(100vh - 98px)', 'important');
+    editorFrameElement.style.setProperty('min-height', '0', 'important');
+    editorFrameElement.style.setProperty('max-height', 'none', 'important');
+    editorFrameElement.style.setProperty('z-index', '2147482000', 'important');
+    editorFrameElement.style.setProperty('border', '0', 'important');
+    editorFrameElement.style.setProperty('border-radius', '0', 'important');
+    editorFrameElement.style.setProperty('background', '#f4f5f7', 'important');
+    editorFrameElement.style.setProperty('box-shadow', 'none', 'important');
+    var editorRecordScroller = editorFrameElement.closest && editorFrameElement.closest('.record__content');
+    if (editorRecordScroller) editorRecordScroller.style.overflowAnchor = 'none';
+  }
+  if (meta) meta.style.display = 'none';
+  if (link) link.style.display = 'none';
+  root.style.height = '100vh';
+  root.style.minHeight = '0';
+  root.style.maxHeight = '100vh';
+  root.style.padding = '0';
+  root.style.gap = '0';
+  root.style.background = '#f4f5f7';
+  floatingEditor.style.height = 'auto';
+  floatingEditor.style.minHeight = '0';
+  floatingEditor.style.overflowY = 'auto';
+  floatingEditor.style.overscrollBehavior = 'contain';
+  var floatingEditorActions = floatingEditor.querySelector('.seed69k-ocr-actions');
+  if (floatingEditorActions) {
+    /* The action row must consume layout space; it must never cover textarea text. */
+    floatingEditorActions.style.position = 'relative';
+    floatingEditorActions.style.bottom = 'auto';
+    floatingEditorActions.style.zIndex = '5';
+    floatingEditorActions.style.paddingTop = '6px';
+    floatingEditorActions.style.paddingBottom = '4px';
+    floatingEditorActions.style.background = '#240b14';
+  }
+  var floatingEditorManualPosition = null;
+  var floatingEditorManualSize = null;
+  var floatingReviewPanel = null;
+  var floatingEditorDragState = null;
+  var floatingEditorResizeState = null;
+  var floatingEditorDragHandle = floatingEditor.querySelector('.seed69k-editor-drag-handle');
+  var floatingEditorResizeHandles = {};
+  var textareaResizeHandles = {};
+  var textareaResizeState = null;
+  ['nw','ne','sw','se'].forEach(function(corner) {
+    var handle = document.createElement('span');
+    handle.className = 'seed69k-context-resize-grip seed69k-context-resize-' + corner;
+    handle.dataset.corner = corner;
+    handle.setAttribute('aria-label', 'تغییر اندازه از گوشهٔ ' + corner);
+    handle.title = 'تغییر اندازه از گوشهٔ ' + corner;
+    handle.style.cssText = 'position:absolute;width:14px;height:14px;border:2px solid #ffc107;border-radius:50%;background:#3a1020;box-sizing:border-box;z-index:30;touch-action:none;user-select:none;';
+    if (corner === 'nw') handle.style.cssText += 'left:3px;top:3px;cursor:nwse-resize;';
+    if (corner === 'ne') handle.style.cssText += 'right:3px;top:3px;cursor:nesw-resize;';
+    if (corner === 'sw') handle.style.cssText += 'left:3px;bottom:3px;cursor:nesw-resize;';
+    if (corner === 'se') handle.style.cssText += 'right:3px;bottom:3px;cursor:nwse-resize;';
+    floatingEditorResizeHandles[corner] = handle;
+    floatingEditor.appendChild(handle);
+  });
+  var textareaResizeWrap = ocrTextarea && ocrTextarea.parentElement &&
+    ocrTextarea.parentElement.classList.contains('seed69k-ocr-textarea-wrap')
+    ? ocrTextarea.parentElement : null;
+  if (textareaResizeWrap) {
+    Array.prototype.slice.call(textareaResizeWrap.querySelectorAll('.seed69k-textarea-resize-grip')).forEach(function(handle) {
+      var corner = handle.dataset.corner;
+      textareaResizeHandles[corner] = handle;
+      handle.addEventListener('pointerdown', function(ev) {
+        beginFloatingEditorResize(ev, corner);
+      });
+    });
+  }
+  /* Delegation covers the adopted/portaled editor node as well as the iframe node. */
+  floatingEditor.addEventListener('pointerdown', function(ev) {
+    var target = ev.target && ev.target.closest ? ev.target.closest('.seed69k-textarea-resize-grip') : null;
+    if (!target || !floatingEditor.contains(target)) return;
+    beginFloatingEditorResize(ev, target.dataset.corner || 'se');
+  });
+  editorHostDocument.addEventListener('pointermove', function(ev) {
+    if (!textareaResizeState || !ocrTextarea) return;
+    ev.preventDefault();
+    var state = textareaResizeState;
+    var delta = ev.clientY - state.startY;
+    var nextHeight = state.corner.indexOf('n') >= 0 ? state.height - delta : state.height + delta;
+    var editorRect = floatingEditor.getBoundingClientRect();
+    var textRect = ocrTextarea.getBoundingClientRect();
+    var actionsRect = floatingEditorActions ? floatingEditorActions.getBoundingClientRect() : null;
+    var actionHeight = actionsRect ? actionsRect.height : 0;
+    var maxHeight = Math.max(52, editorRect.bottom - actionHeight - 8 - textRect.top);
+    setTextareaHeight(Math.min(maxHeight, Math.max(52, nextHeight)));
+  }, true);
+  editorHostDocument.addEventListener('pointerup', function(ev) {
+    if (!textareaResizeState) return;
+    textareaResizeState = null;
+    try {
+      var handle = textareaResizeHandles[ev.target && ev.target.dataset ? ev.target.dataset.corner : ''];
+      if (handle) handle.releasePointerCapture(ev.pointerId);
+    } catch (e) {}
+  }, true);
+  function editorViewportMetrics() {
+    var visual = editorHostWindow.visualViewport;
+    var viewportLeft = visual ? Number(visual.offsetLeft || 0) : 0;
+    var viewportTop = visual ? Number(visual.offsetTop || 0) : 0;
+    var viewportWidth = visual ? Number(visual.width || 0) : (
+      editorHostWindow.innerWidth || editorHostDocument.documentElement.clientWidth || 0
+    );
+    var viewportHeight = visual ? Number(visual.height || 0) : (
+      editorHostWindow.innerHeight || editorHostDocument.documentElement.clientHeight || 0
+    );
+    return {
+      left:viewportLeft,
+      top:viewportTop,
+      width:viewportWidth,
+      height:viewportHeight,
+      right:viewportLeft + viewportWidth,
+      bottom:viewportTop + viewportHeight
+    };
+  }
+  function setTextareaHeight(height) {
+    if (!ocrTextarea) return;
+    var clamped = Math.max(52, Math.round(Number(height) || 52));
+    var wrap = ocrTextarea.parentElement && ocrTextarea.parentElement.classList.contains('seed69k-ocr-textarea-wrap')
+      ? ocrTextarea.parentElement : null;
+    if (wrap) {
+      wrap.style.flex = '0 0 ' + clamped + 'px';
+      wrap.style.height = clamped + 'px';
+    }
+    ocrTextarea.style.flex = '1 1 auto';
+    ocrTextarea.style.height = '100%';
+    ocrTextarea.style.minHeight = '52px';
+    ocrTextarea.style.maxHeight = 'none';
+    ocrTextarea.style.overflowY = 'auto';
+  }
+  function syncOcrTextareaWithEditor() {
+    if (!ocrTextarea || !floatingEditor || !floatingEditorManualSize) return;
+    var ocrEditor = floatingEditor.querySelector('.seed69k-ocr-editor');
+    if (!ocrEditor) return;
+    var editorRect = ocrEditor.getBoundingClientRect();
+    var textRect = ocrTextarea.getBoundingClientRect();
+    var actionsRect = floatingEditorActions ? floatingEditorActions.getBoundingClientRect() : null;
+    var actionHeight = actionsRect ? actionsRect.height : 0;
+    setTextareaHeight(Math.max(52, editorRect.bottom - actionHeight - 8 - textRect.top));
+  }
+  function moveFloatingEditorTo(left, top) {
+    var margin = 8;
+    var viewport = editorViewportMetrics();
+    var rect = floatingEditor.getBoundingClientRect();
+    var maxLeft = Math.max(
+      viewport.left + margin,
+      viewport.right - Math.max(80, rect.width) - margin
+    );
+    var panelHeight = Math.max(96, Math.min(rect.height || 96, viewport.height - margin * 2));
+    var maxTop = Math.max(
+      viewport.top + margin,
+      viewport.bottom - panelHeight - margin
+    );
+    var nextLeft = Math.max(viewport.left + margin, Math.min(maxLeft, left));
+    var nextTop = Math.max(viewport.top + margin, Math.min(maxTop, top));
+    floatingEditorManualPosition = {left:nextLeft, top:nextTop};
+    floatingEditor.style.left = Math.round(nextLeft) + 'px';
+    floatingEditor.style.top = Math.round(nextTop) + 'px';
+    /* Dragging changes position only; preserve the current compact panel/textarea dimensions. */
+  }
+  if (floatingEditorDragHandle) {
+    floatingEditorDragHandle.addEventListener('pointerdown', function(ev) {
+      if (ev.button != null && ev.button !== 0) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      var rect = floatingEditor.getBoundingClientRect();
+      floatingEditorDragState = {offsetX:ev.clientX - rect.left, offsetY:ev.clientY - rect.top};
+      try { floatingEditorDragHandle.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    editorHostDocument.addEventListener('pointermove', function(ev) {
+      if (!floatingEditorDragState) return;
+      ev.preventDefault();
+      moveFloatingEditorTo(
+        ev.clientX - floatingEditorDragState.offsetX,
+        ev.clientY - floatingEditorDragState.offsetY
+      );
+    }, true);
+    editorHostDocument.addEventListener('pointerup', function(ev) {
+      if (!floatingEditorDragState) return;
+      floatingEditorDragState = null;
+      try { floatingEditorDragHandle.releasePointerCapture(ev.pointerId); } catch (e) {}
+    }, true);
+  }
+  function beginFloatingEditorResize(ev, corner) {
+    if (!floatingEditor || !corner) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    var rect = floatingEditor.getBoundingClientRect();
+    floatingEditorResizeState = {
+      corner: corner,
+      startX: ev.clientX,
+      startY: ev.clientY,
+      rect: {left:rect.left, top:rect.top, right:rect.right, bottom:rect.bottom, width:rect.width, height:rect.height}
+    };
+    try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (e) {}
+  }
+  function resizeFloatingEditorTo(clientX, clientY) {
+    if (!floatingEditorResizeState) return;
+    var state = floatingEditorResizeState;
+    var viewport = editorViewportMetrics();
+    var margin = 8;
+    var minWidth = 280;
+    var minHeight = 180;
+    var minLeft = viewport.left + margin;
+    var minTop = viewport.top + margin;
+    var maxRight = viewport.right - margin;
+    var maxBottom = viewport.bottom - margin;
+    var dx = clientX - state.startX;
+    var dy = clientY - state.startY;
+    var left = state.rect.left;
+    var top = state.rect.top;
+    var width = state.rect.width;
+    var height = state.rect.height;
+    if (state.corner.indexOf('w') >= 0) {
+      left = Math.max(minLeft, Math.min(state.rect.right - minWidth, state.rect.left + dx));
+      width = state.rect.right - left;
+    } else {
+      width = Math.max(minWidth, Math.min(maxRight - left, state.rect.width + dx));
+    }
+    if (state.corner.indexOf('n') >= 0) {
+      top = Math.max(minTop, Math.min(state.rect.bottom - minHeight, state.rect.top + dy));
+      height = state.rect.bottom - top;
+    } else {
+      height = Math.max(minHeight, Math.min(maxBottom - top, state.rect.height + dy));
+    }
+    if (left + width > maxRight) width = Math.max(minWidth, maxRight - left);
+    if (top + height > maxBottom) height = Math.max(minHeight, maxBottom - top);
+    floatingEditorManualPosition = {left:left, top:top};
+    floatingEditorManualSize = {width:width, height:height};
+    floatingEditor.style.left = Math.round(left) + 'px';
+    floatingEditor.style.top = Math.round(top) + 'px';
+    floatingEditor.style.width = Math.round(width) + 'px';
+    floatingEditor.style.maxWidth = Math.round(width) + 'px';
+    floatingEditor.style.height = Math.round(height) + 'px';
+    floatingEditor.style.maxHeight = Math.round(height) + 'px';
+    syncOcrTextareaWithEditor();
+  }
+  Object.keys(floatingEditorResizeHandles).forEach(function(corner) {
+    floatingEditorResizeHandles[corner].addEventListener('pointerdown', function(ev) {
+      beginFloatingEditorResize(ev, corner);
+    });
+  });
+  editorHostDocument.addEventListener('pointermove', function(ev) {
+    if (!floatingEditorResizeState) return;
+    ev.preventDefault();
+    resizeFloatingEditorTo(ev.clientX, ev.clientY);
+  }, true);
+  editorHostDocument.addEventListener('pointerup', function(ev) {
+    if (!floatingEditorResizeState) return;
+    floatingEditorResizeState = null;
+    try { ev.target.releasePointerCapture(ev.pointerId); } catch (e) {}
+  }, true);
+  function installFloatingReviewControls() {
+    var hostDoc = editorHostDocument;
+    if (!hostDoc || !hostDoc.body) return;
+    var questionsPanel = hostDoc.querySelector('.questions-form.wrapper__form');
+    if (!questionsPanel) return;
+    floatingReviewPanel = questionsPanel;
+    if (questionsPanel.dataset.seed69kRadialInstalled === '1') return;
+    questionsPanel.dataset.seed69kRadialInstalled = '1';
+    questionsPanel.classList.add('seed69k-floating-review');
+    /* Install once on the parent document. Argilla replaces the disabled submit
+       button after approval is selected, so delegation catches the replacement. */
+    if (hostDoc.documentElement && hostDoc.documentElement.dataset.seed69kDelegatedQueueRefresh !== '1') {
+      hostDoc.documentElement.dataset.seed69kDelegatedQueueRefresh = '1';
+      var queueRefreshScheduled = false;
+      function scheduleQueueRefresh() {
+        if (queueRefreshScheduled) return;
+        queueRefreshScheduled = true;
+        var queueWindow = hostDoc.defaultView || window;
+        queueWindow.setTimeout(function() {
+          try {
+            if (hostDoc.defaultView && hostDoc.defaultView.location) hostDoc.defaultView.location.reload();
+          } catch (e) {}
+        }, 3000);
+      }
+      function attachQueueSubmitButtons() {
+        Array.prototype.slice.call(hostDoc.querySelectorAll('.button--submit')).forEach(function(button) {
+          if (button.dataset.seed69kQueueRefreshBound === '1') return;
+          button.dataset.seed69kQueueRefreshBound = '1';
+          button.addEventListener('click', scheduleQueueRefresh, true);
+        });
+      }
+      hostDoc.addEventListener('submit', scheduleQueueRefresh, true);
+      hostDoc.addEventListener('click', function(ev) {
+        var target = ev && ev.target;
+        var submitButton = target && target.closest ? target.closest('.button--submit') : null;
+        if (submitButton) scheduleQueueRefresh();
+      }, true);
+      attachQueueSubmitButtons();
+      if (hostDoc.body && hostDoc.defaultView && hostDoc.defaultView.MutationObserver) {
+        var queueRefreshObserver = new hostDoc.defaultView.MutationObserver(attachQueueSubmitButtons);
+        if (hostDoc.body) queueRefreshObserver.observe(hostDoc.body, {childList:true, subtree:true});
+      }
+      /* Browser Back/Forward can restore this page from BFCache without rerunning
+         Argilla's pending-record query. Force the same fresh queue load as Cmd+R. */
+      var queueHistoryWindow = hostDoc.defaultView || window;
+      var queueHistoryReloadScheduled = false;
+      function reloadQueueAfterHistoryRestore() {
+        if (queueHistoryReloadScheduled) return;
+        queueHistoryReloadScheduled = true;
+        queueHistoryWindow.setTimeout(function() {
+          try {
+            if (hostDoc.defaultView && hostDoc.defaultView.location) hostDoc.defaultView.location.reload();
+          } catch (e) {}
+        }, 0);
+      }
+      queueHistoryWindow.addEventListener('popstate', reloadQueueAfterHistoryRestore, true);
+      queueHistoryWindow.addEventListener('pageshow', function(ev) {
+        if (ev && ev.persisted) reloadQueueAfterHistoryRestore();
+      }, true);
+    }
+    /* Keep the form in Argilla's Vue tree so record transitions can mount the next form. */
+    var rightPane = questionsPanel.closest('.wrapper__right');
+    var mainPane = hostDoc.querySelector('.wrapper__left');
+    if (rightPane) rightPane.classList.add('seed69k-zero-pane');
+    if (mainPane) mainPane.classList.add('seed69k-full-pane');
+    var radialItems = Array.prototype.slice.call(
+      questionsPanel.querySelectorAll('.inputs-area > .input-button[role="button"]')
+    ).concat(Array.prototype.slice.call(questionsPanel.querySelectorAll('.footer-form button')));
+    radialItems = radialItems.filter(function(item) {
+      return !item.classList.contains('button--draft') && !item.classList.contains('button--discard');
+    }).slice(0, 6);
+    function setRadialActionLabel(selector, text) {
+      var button = questionsPanel.querySelector(selector);
+      if (!button) return;
+      var spans = Array.prototype.slice.call(button.querySelectorAll('span')).filter(function(span) {
+        return !span.classList.contains('button__shortcuts') && !span.closest('.button__shortcuts-group');
+      });
+      var target = spans[spans.length - 1];
+      if (target) target.textContent = text;
+      else button.textContent = text;
+      button.setAttribute('aria-label', text);
+    }
+    setRadialActionLabel('.button--draft', 'پیش‌نویس');
+    setRadialActionLabel('.button--discard', 'دورانداختن');
+    radialItems.forEach(function(item, index) {
+      var angle = (-150 + index * (300 / Math.max(1, radialItems.length - 1))) * Math.PI / 180;
+      item.classList.add('seed69k-radial-item');
+      item.style.setProperty('--radial-x', (Math.cos(angle) * 118).toFixed(2) + 'px');
+      item.style.setProperty('--radial-y', (Math.sin(angle) * 118).toFixed(2) + 'px');
+      item.style.setProperty('--radial-delay', String(index * 34) + 'ms');
+    });
+    var radialToggle = hostDoc.createElement('button');
+    radialToggle.type = 'button';
+    radialToggle.className = 'seed69k-radial-toggle';
+    radialToggle.setAttribute('aria-label', 'باز کردن ابزارهای بازبینی');
+    radialToggle.setAttribute('aria-expanded', 'false');
+    radialToggle.innerHTML = '<span>✓</span>';
+    radialToggle.addEventListener('click', function(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      var isOpen = questionsPanel.classList.toggle('seed69k-radial-open');
+      radialToggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      radialToggle.setAttribute('aria-label', isOpen ? 'بستن ابزارهای بازبینی' : 'باز کردن ابزارهای بازبینی');
+      radialToggle.innerHTML = isOpen ? '<span>×</span>' : '<span>✓</span>';
+    });
+    questionsPanel.appendChild(radialToggle);
+    if (!hostDoc.getElementById('seed69k-floating-review-style')) {
+      var chromeStyle = hostDoc.createElement('style');
+      chromeStyle.id = 'seed69k-floating-review-style';
+      chromeStyle.textContent = [
+        '.wrapper__right.seed69k-zero-pane{flex:0 0 0!important;width:0!important;min-width:0!important;max-width:0!important;overflow:visible!important}',
+        '.wrapper__left.seed69k-full-pane{flex:1 1 100%!important;width:100%!important;min-width:0!important;max-width:100%!important}','.wrapper__records .filters,.wrapper__records__header{position:relative!important;z-index:2147483001!important;pointer-events:none!important}','.wrapper__records .filters button,.wrapper__records .filters input,.wrapper__records .filters select,.wrapper__records .filters [role=button],.wrapper__records__header button,.wrapper__records__header a{pointer-events:auto!important}',
+        '.questions-form.wrapper__form.seed69k-floating-review{position:fixed!important;left:8px!important;right:auto!important;bottom:72px!important;top:auto!important;z-index:2147483647!important;display:block!important;width:320px!important;min-width:320px!important;max-width:320px!important;height:320px!important;max-height:320px!important;margin:0!important;padding:0!important;overflow:visible!important;box-sizing:border-box!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;pointer-events:none!important}',
+        '.seed69k-floating-review .questions-form__content,.seed69k-floating-review .footer-form,.seed69k-floating-review .footer-form__content{display:contents!important;background:transparent!important;border:0!important;margin:0!important;padding:0!important}',
+        '.seed69k-floating-review .questions-form__content *,.seed69k-floating-review .footer-form *{visibility:hidden!important}',
+        '.seed69k-floating-review .seed69k-radial-item,.seed69k-floating-review .seed69k-radial-item *{visibility:visible!important}',
+        '.seed69k-floating-review .seed69k-radial-item{position:absolute!important;left:160px!important;top:160px!important;z-index:2!important;display:flex!important;align-items:center!important;justify-content:center!important;width:112px!important;min-width:112px!important;max-width:112px!important;height:52px!important;min-height:52px!important;margin:-26px 0 0 -56px!important;padding:6px 10px!important;box-sizing:border-box!important;border:1px solid rgba(255,255,255,.35)!important;border-radius:999px!important;background:#3a1020!important;color:#fff!important;font:600 13px/1.35 Vazirmatn,Tahoma,sans-serif!important;text-align:center!important;white-space:normal!important;overflow:visible!important;overflow-wrap:anywhere!important;box-shadow:0 5px 18px rgba(0,0,0,.38)!important;opacity:0!important;transform:translate(0,0) scale(.15)!important;transform-origin:center!important;pointer-events:none!important;transition:transform .32s cubic-bezier(.2,.9,.25,1.25) var(--radial-delay),opacity .18s ease var(--radial-delay),background .18s ease!important}',
+        '.seed69k-floating-review.seed69k-radial-open .seed69k-radial-item{opacity:1!important;transform:translate(var(--radial-x),var(--radial-y)) scale(1)!important;pointer-events:auto!important}',
+        '.seed69k-floating-review .seed69k-radial-item:hover{background:#641d39!important}',
+        '.seed69k-floating-review .seed69k-radial-item input{margin:0 0 0 4px!important}',
+        '.seed69k-floating-review .button--draft,.seed69k-floating-review .button--discard{white-space:nowrap!important;overflow-wrap:normal!important}',
+        '.seed69k-floating-review .button--draft .button__shortcuts-group,.seed69k-floating-review .button--discard .button__shortcuts{display:none!important}',
+        '.seed69k-floating-review .seed69k-radial-toggle{position:absolute!important;left:160px!important;top:160px!important;z-index:4!important;width:64px!important;min-width:64px!important;height:64px!important;margin:-32px 0 0 -32px!important;padding:0!important;border:2px solid rgba(255,255,255,.75)!important;border-radius:50%!important;background:#250711!important;color:#fff!important;font:700 29px/1 Vazirmatn,Tahoma,sans-serif!important;box-shadow:0 7px 24px rgba(0,0,0,.5)!important;cursor:pointer!important;pointer-events:auto!important;transition:transform .24s ease,background .2s ease!important}',
+        '.seed69k-floating-review.seed69k-radial-open .seed69k-radial-toggle{transform:rotate(90deg)!important;background:#641d39!important}',
+        '.seed69k-floating-review .seed69k-radial-toggle:hover{transform:scale(1.08)!important}',
+        '.seed69k-floating-review.seed69k-radial-open .seed69k-radial-toggle:hover{transform:rotate(90deg) scale(1.08)!important}',
+        '.seed69k-floating-review .seed69k-radial-toggle span{display:block!important;pointer-events:none!important}',
+        '@media(max-width:520px){.questions-form.wrapper__form.seed69k-floating-review{left:0!important;bottom:64px!important;transform:scale(.78)!important;transform-origin:bottom left!important}}',
+        '@media(prefers-reduced-motion:reduce){.seed69k-floating-review .seed69k-radial-item,.seed69k-floating-review .seed69k-radial-toggle{transition:none!important}}'
+      ].join('');
+      hostDoc.head.appendChild(chromeStyle);
+    }
+  }
+  installFloatingReviewControls();
+  setTimeout(installFloatingReviewControls, 500);
+  setTimeout(installFloatingReviewControls, 1500);
+  stage.classList.add('seed69k-show-boxes');
+  if (showToggle) showToggle.checked = true;
+  if (showToggle) showToggle.addEventListener('change', function(){ stage.classList.toggle('seed69k-show-boxes', !!showToggle.checked); });
+  if (editToggle) editToggle.addEventListener('change', function(){ stage.classList.toggle('seed69k-edit-mode', !!editToggle.checked); });
+  function enableEditMode() {
+    if (editToggle) editToggle.checked = true;
+    if (showToggle) showToggle.checked = true;
+    stage.classList.add('seed69k-edit-mode');
+    stage.classList.add('seed69k-show-boxes');
+  }
+  var boxes = [];
+  try { boxes = JSON.parse(field.layout_boxes_json || '[]'); } catch (e) { boxes = []; }
+  function normalizeLabel(label) {
+    label = String(label || 'Text');
+    return labelMap[label] || label;
+  }
+  function normalizeBox(box) {
+    box = box || {};
+    box.label = normalizeLabel(box.label || box.raw_label || 'Text');
+    if (box.label === 'Image') box.label = 'Figure';
+    if (!box.content_text && box.text) box.content_text = String(box.text);
+    if (box.score == null && box.confidence != null) box.score = box.confidence;
+    if (box.left_pct == null && box.x0 != null && img && img.naturalWidth && img.naturalHeight) {
+      box.left_pct = 100 * Number(box.x0) / img.naturalWidth;
+      box.top_pct = 100 * Number(box.y0) / img.naturalHeight;
+      box.width_pct = 100 * (Number(box.x1) - Number(box.x0)) / img.naturalWidth;
+      box.height_pct = 100 * (Number(box.y1) - Number(box.y0)) / img.naturalHeight;
+    }
+    return box;
+  }
+  function cloneBoxValue(box) {
+    try { return JSON.parse(JSON.stringify(box || {})); }
+    catch (e) { return Object.assign({}, box || {}); }
+  }
+  function normalizeBoxes(values) {
+    var seenIds = Object.create(null);
+    return (Array.isArray(values) ? values : []).map(function(box, index) {
+      box = cloneBoxValue(box);
+      normalizeBox(box);
+      var requestedId = box.id == null ? '' : String(box.id);
+      var id = requestedId && !seenIds[requestedId] ? requestedId : 'seed69k-' + index + '-' + Math.random().toString(36).slice(2, 10);
+      seenIds[id] = true;
+      box.id = id;
+      return box;
+    });
+  }
+  boxes = normalizeBoxes(boxes);
+  var selected = -1;
+  var allSelected = false;
+  var addMode = false;
+  var undoStack = [];
+  var undoLimit = 60;
+  var ocrInputUndoKey = '';
+  var ocrEditorBoxId = '';
+  var ocrFocusedBoxId = '';
+  var ocrTextarea = floatingEditor.querySelector('.seed69k-ocr-textarea');
+  var markdownPreview = null; /* table previews now use the draggable bbox overlay */
+  if (markdownPreview) { markdownPreview.style.maxHeight = '120px'; markdownPreview.style.overflow = 'auto'; }
+  var saveOcrButton = floatingEditor.querySelector('.seed69k-ocr-save');
+  var clearOcrButton = floatingEditor.querySelector('.seed69k-ocr-clear');
+  var fillOcrButton = floatingEditor.querySelector('.seed69k-ocr-fill');
+var fillBinaOcrButton = floatingEditor.querySelector('.seed69k-ocr-bina');
+var fillGeminiOcrButton = floatingEditor.querySelector('.seed69k-ocr-gemini');
+  var copyBoxButton = floatingEditor.querySelector('.seed69k-ocr-copy');
+  var saveTimer = null;
+  var lastSavePayload = "";
+  var saveInFlight = null;
+  var saveQueued = false;
+  var saveQueuedReason = '';
+  function cloneBoxes() { return JSON.parse(JSON.stringify(boxes)); }
+  function pushUndo(action) {
+    undoStack.push({boxes: cloneBoxes(), selected:selected, action:action || 'edit'});
+    if (undoStack.length > undoLimit) undoStack.shift();
+  }
+  function undoLast() {
+    var snap = undoStack.pop();
+    if (!snap) { setStatus('چیزی برای undo وجود ندارد.'); return; }
+    boxes = snap.boxes || [];
+    selected = typeof snap.selected === 'number' ? snap.selected : -1;
+    renderBoxes();
+    scheduleSave('undo');
+    setStatus('Undo انجام شد: ' + (snap.action || 'ویرایش'));
+  }
+  function escapeHtmlJs(text) {
+    return String(text || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function textToHtml(text) {
+    return escapeHtmlJs(text).replace(/\n/g, '<br>');
+  }
+  function boxOcrText(box) {
+    if (!box) return '';
+    return box.content_text || '';
+  }
+  function clearSafeContainer(container) {
+    if (!container) return;
+    while (container.firstChild) container.removeChild(container.firstChild);
+  }
+  function splitMarkdownTableRow(line) {
+    var value = String(line || '').trim();
+    if (value.charAt(0) === '|') value = value.slice(1);
+    if (value.charAt(value.length - 1) === '|') value = value.slice(0, -1);
+    var cells = [];
+    var current = '';
+    var escaped = false;
+    var inCode = false;
+    for (var index = 0; index < value.length; index += 1) {
+      var ch = value.charAt(index);
+      if (escaped) {
+        current += ch;
+        escaped = false;
+      } else if (ch === '\\') {
+        escaped = true;
+      } else if (ch === '`') {
+        inCode = !inCode;
+        current += ch;
+      } else if (ch === '|' && !inCode) {
+        cells.push(current.trim());
+        current = '';
+      } else {
+        current += ch;
+      }
+    }
+    if (escaped) current += '\\';
+    cells.push(current.trim());
+    return cells;
+  }
+  function isMarkdownDividerRow(cells) {
+    return cells.length > 1 && cells.every(function(cell) {
+      return /^:?-{3,}:?$/.test(String(cell || '').replace(/\s+/g, ''));
+    });
+  }
+  function renderSafeMarkdownTable(container, text) {
+    var lines = String(text || '').split(/\r?\n/).map(function(line) {
+      return line.trim();
+    }).filter(Boolean);
+    var dividerIndex = -1;
+    for (var index = 1; index < lines.length; index += 1) {
+      if (isMarkdownDividerRow(splitMarkdownTableRow(lines[index]))) {
+        dividerIndex = index;
+        break;
+      }
+    }
+    if (dividerIndex < 1) return false;
+    var headerCells = splitMarkdownTableRow(lines[dividerIndex - 1]);
+    if (headerCells.length < 2) return false;
+    var bodyRows = [];
+    for (var rowIndex = dividerIndex + 1; rowIndex < lines.length; rowIndex += 1) {
+      if (lines[rowIndex].indexOf('|') < 0) break;
+      bodyRows.push(splitMarkdownTableRow(lines[rowIndex]));
+    }
+    var doc = container.ownerDocument || editorHostDocument || document;
+    var table = doc.createElement('table');
+    table.className = 'seed69k-safe-table';
+    var thead = doc.createElement('thead');
+    var headerRow = doc.createElement('tr');
+    headerCells.forEach(function(value) {
+      var th = doc.createElement('th');
+      th.textContent = value;
+      headerRow.appendChild(th);
+    });
+    thead.appendChild(headerRow);
+    table.appendChild(thead);
+    if (bodyRows.length) {
+      var tbody = doc.createElement('tbody');
+      bodyRows.forEach(function(row) {
+        var tr = doc.createElement('tr');
+        for (var column = 0; column < headerCells.length; column += 1) {
+          var td = doc.createElement('td');
+          td.textContent = row[column] == null ? '' : row[column];
+          tr.appendChild(td);
+        }
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+    }
+    container.appendChild(table);
+    return true;
+  }
+  function parseSuryaHtml(value) {
+    var doc = (containerOwnerDocument(value) || editorHostDocument || document);
+    var Parser = (doc.defaultView && doc.defaultView.DOMParser) || window.DOMParser;
+    return new Parser().parseFromString(String(value || ''), 'text/html');
+  }
+  function containerOwnerDocument() {
+    return markdownPreview && markdownPreview.ownerDocument;
+  }
+  function renderSafeSuryaHtmlTable(container, html) {
+    if (!/<table(?:\s|>)/i.test(String(html || ''))) return false;
+    var parsed = parseSuryaHtml(html);
+    var sourceTable = parsed.querySelector('table');
+    if (!sourceTable || !sourceTable.rows || !sourceTable.rows.length) return false;
+    var doc = container.ownerDocument || editorHostDocument || document;
+    var table = doc.createElement('table');
+    table.className = 'seed69k-safe-table';
+    var body = doc.createElement('tbody');
+    Array.prototype.slice.call(sourceTable.rows).forEach(function(sourceRow) {
+      var row = doc.createElement('tr');
+      Array.prototype.slice.call(sourceRow.cells || []).forEach(function(sourceCell) {
+        var tag = String(sourceCell.tagName || '').toLowerCase() === 'th' ? 'th' : 'td';
+        var cell = doc.createElement(tag);
+        cell.textContent = String(sourceCell.textContent || '').replace(/\s+/g, ' ').trim();
+        ['rowspan', 'colspan'].forEach(function(attribute) {
+          var span = Math.max(1, Math.min(50, Number(sourceCell.getAttribute(attribute) || 1)));
+          if (span > 1) cell.setAttribute(attribute, String(Math.round(span)));
+        });
+        row.appendChild(cell);
+      });
+      if (row.children.length) body.appendChild(row);
+    });
+    if (!body.children.length) return false;
+    table.appendChild(body);
+    container.appendChild(table);
+    return true;
+  }
+  function suryaHtmlTableToMarkdown(html) {
+    var parsed = parseSuryaHtml(html);
+    var table = parsed.querySelector('table');
+    if (!table || !table.rows || !table.rows.length) return '';
+    var rows = Array.prototype.slice.call(table.rows).map(function(row) {
+      return Array.prototype.slice.call(row.cells || []).map(function(cell) {
+        return String(cell.textContent || '').replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|');
+      });
+    }).filter(function(row) { return row.length; });
+    if (!rows.length) return '';
+    var columnCount = rows.reduce(function(count, row) {
+      return Math.max(count, row.length);
+    }, 0);
+    function markdownRow(row) {
+      var cells = row.slice();
+      while (cells.length < columnCount) cells.push('');
+      return '| ' + cells.join(' | ') + ' |';
+    }
+    return [markdownRow(rows[0]), markdownRow(Array(columnCount).fill('---'))]
+      .concat(rows.slice(1).map(markdownRow)).join('\n');
+  }
+  function suryaHtmlToPlainText(html) {
+    var parsed = parseSuryaHtml(html);
+    Array.prototype.slice.call(parsed.querySelectorAll('br')).forEach(function(node) {
+      if (node.parentNode) node.parentNode.replaceChild(parsed.createTextNode('\n'), node);
+    });
+    Array.prototype.slice.call(parsed.querySelectorAll('p,div,h1,h2,h3,h4,h5,li,tr,pre')).forEach(function(node) {
+      node.appendChild(parsed.createTextNode('\n'));
+    });
+    return String(parsed.body ? parsed.body.textContent : '')
+      .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+  }
+  function renderSafeBoxContent(container, box, text) {
+    clearSafeContainer(container);
+    var value = String(text || '');
+    if (!value) return;
+    if (box && normalizeLabel(box.label) === 'Table') {
+      if (renderSafeMarkdownTable(container, value)) return;
+      if (box.content_html && renderSafeSuryaHtmlTable(container, box.content_html)) return;
+    }
+    if (renderSafeMarkdownTable(container, value)) return;
+    var doc = container.ownerDocument || editorHostDocument || document;
+    var pre = doc.createElement('pre');
+    pre.className = 'seed69k-safe-pre';
+    pre.textContent = value;
+    container.appendChild(pre);
+  }
+  function updateMarkdownPreview(value) {
+    /* Deliberately empty: table comparison is opened from the bbox 🧩 button. */
+    if (!markdownPreview) return;
+    var box = selected >= 0 ? boxes[selected] : null;
+    var isTable = !!box && normalizeLabel(box.label) === 'Table';
+    var text = value == null ? (box ? boxOcrText(box) : '') : String(value);
+    var hasPipeTable = /\|/.test(text);
+    markdownPreview.hidden = !isTable && !hasPipeTable;
+    clearSafeContainer(markdownPreview);
+    if (!isTable && !hasPipeTable) return;
+    var previewBox = box;
+    var previewValue = value == null ? boxOcrText(box) : String(value);
+    if (previewValue !== boxOcrText(box)) {
+      previewBox = {label:box.label, content_html:''};
+    }
+    renderSafeBoxContent(
+      markdownPreview,
+      previewBox,
+      previewValue
+    );
+  }
+
+  var tableCompareDocument = (stage && stage.ownerDocument) || document;
+  var tableCompareWindow = tableCompareDocument.defaultView || window;
+  var tableCompareOverlay = null;
+  var tableCompareBody = null;
+  var tableCompareOpen = false;
+  var tableCompareIndex = -1;
+  var tableComparePosition = null;
+  var tableCompareDragState = null;
+  var tableCompareResizeState = null;
+  var tableCompareButtonActivation = false;
+  var tableCompareAllowClose = false;
+
+  function hasMarkdownTable(text) {
+    var lines = String(text || '').split(/\r?\n/).map(function(line) { return line.trim(); }).filter(Boolean);
+    for (var i = 1; i < lines.length; i += 1) {
+      if (isMarkdownDividerRow(splitMarkdownTableRow(lines[i]))) return true;
+    }
+    return false;
+  }
+  function hasDetectedTable(box) {
+    if (!box || box.deleted) return false;
+    return !!box.contains_markdown_table ||
+      String(normalizeLabel(box.label || '')).toLowerCase() === 'table' ||
+      /<table(?:\s|>)/i.test(String(box.content_html || '')) ||
+      hasMarkdownTable(boxOcrText(box));
+  }
+  function ensureTableCompareStyle() {
+    if (!tableCompareDocument || !tableCompareDocument.head) return;
+    if (tableCompareDocument.getElementById('seed69k-table-compare-style')) return;
+    var style = tableCompareDocument.createElement('style');
+    style.id = 'seed69k-table-compare-style';
+    style.textContent = '.seed69k-table-compare-overlay{display:none;position:fixed;z-index:2147483646;box-sizing:border-box;overflow:hidden;direction:rtl;background:rgba(22,3,9,.94);color:#fff;border:2px solid #ffc107;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.62);font-family:"Vazirmatn",Tahoma,Arial,sans-serif;pointer-events:auto}.seed69k-table-compare-overlay.is-open{display:flex!important;flex-direction:column}.seed69k-table-compare-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;box-sizing:border-box;min-height:32px;padding:4px 8px;background:#3a1020;color:#ffc107;font-size:13px;font-weight:800;cursor:move;touch-action:none;user-select:none}.seed69k-table-compare-close{width:24px;height:24px;padding:0;border:1px solid rgba(255,255,255,.55);border-radius:5px;background:transparent;color:#fff;font:18px/20px Arial,sans-serif;cursor:pointer}.seed69k-table-compare-body{min-height:0;flex:1 1 auto;overflow:auto;background:rgba(255,255,255,.96);color:#171717;padding:6px;box-sizing:border-box;direction:rtl}.seed69k-table-compare-body .seed69k-safe-table{width:100%;border-collapse:collapse;table-layout:fixed;direction:rtl;font-family:"Vazirmatn",Tahoma,Arial,sans-serif;font-size:clamp(10px,1.45vw,18px);line-height:1.45}.seed69k-table-compare-body .seed69k-safe-table th,.seed69k-table-compare-body .seed69k-safe-table td{border:1px solid #777;padding:4px 6px;vertical-align:top;text-align:right;direction:rtl;white-space:pre-wrap;overflow-wrap:anywhere}.seed69k-table-compare-body .seed69k-safe-table th{background:#eee8d9;font-weight:800}.seed69k-table-compare-body .seed69k-safe-pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;direction:rtl;text-align:right;color:#171717;font:16px/1.8 "Vazirmatn",Tahoma,sans-serif}.seed69k-table-compare-resize{position:absolute!important;z-index:8!important;width:18px!important;height:18px!important;padding:0!important;margin:0!important;background:#ffc107!important;border:2px solid #160309!important;border-radius:50%!important;box-sizing:border-box!important;opacity:.9!important;pointer-events:auto!important}.seed69k-table-compare-resize-nw{left:3px!important;top:3px!important;cursor:nwse-resize!important}.seed69k-table-compare-resize-ne{right:3px!important;top:3px!important;cursor:nesw-resize!important}.seed69k-table-compare-resize-sw{left:3px!important;bottom:3px!important;cursor:nesw-resize!important}.seed69k-table-compare-resize-se{right:3px!important;bottom:3px!important;cursor:nwse-resize!important}';
+    tableCompareDocument.head.appendChild(style);
+  }
+  function tableCompareAnchorRect(index) {
+    var target = stage.querySelector('.seed69k-layout-box[data-index="' + index + '"]');
+    if (!target) return null;
+    var br = target.getBoundingClientRect();
+    return {
+      left: br.left,
+      top: br.top,
+      width: Math.max(1, br.width),
+      height: Math.max(1, br.height)
+    };
+  }
+    /* seed69k-table-compare-free-drag-v1 */
+function positionTableCompareOverlay(reset) {
+    if (!tableCompareOverlay || !tableCompareOpen) return;
+    var anchor = tableCompareAnchorRect(tableCompareIndex);
+    if (reset || !tableComparePosition) {
+      if (!anchor) return;
+      tableComparePosition = anchor;
+    }
+    var viewportWidth = Math.max(1, Number(tableCompareWindow.innerWidth || tableCompareWindow.innerWidth || 1));
+    var viewportHeight = Math.max(1, Number(tableCompareWindow.innerHeight || tableCompareWindow.innerHeight || 1));
+    var width = Math.max(1, Number(tableComparePosition.width || (anchor && anchor.width) || 1));
+    var height = Math.max(1, Number(tableComparePosition.height || (anchor && anchor.height) || 1));
+    /* Keep a small strip visible, but allow oversized tables to move vertically. */
+    var minVisible = 40;
+    var minLeft = Math.min(0, viewportWidth - width + minVisible);
+    var maxLeft = Math.max(0, viewportWidth - minVisible);
+    var minTop = Math.min(0, viewportHeight - height + minVisible);
+    var maxTop = Math.max(0, viewportHeight - minVisible);
+    var left = Math.max(minLeft, Math.min(maxLeft, Number(tableComparePosition.left || 0)));
+    var top = Math.max(minTop, Math.min(maxTop, Number(tableComparePosition.top || 0)));
+    tableCompareOverlay.style.left = Math.round(left) + 'px';
+    tableCompareOverlay.style.top = Math.round(top) + 'px';
+    tableCompareOverlay.style.width = Math.round(width) + 'px';
+    tableCompareOverlay.style.height = Math.round(height) + 'px';
+    tableComparePosition.left = left;
+    tableComparePosition.top = top;
+    tableComparePosition.width = width;
+    tableComparePosition.height = height;
+  }
+  function stopTableCompareDrag() {
+    if (!tableCompareDragState && !tableCompareResizeState) return;
+    tableCompareDocument.removeEventListener('pointermove', moveTableCompareDrag, true);
+    tableCompareWindow.removeEventListener('pointermove', moveTableCompareDrag, true);
+    tableCompareDocument.removeEventListener('pointermove', moveTableCompareResize, true);
+    tableCompareWindow.removeEventListener('pointermove', moveTableCompareResize, true);
+    tableCompareDocument.removeEventListener('pointerup', stopTableCompareDrag, true);
+    tableCompareWindow.removeEventListener('pointerup', stopTableCompareDrag, true);
+    tableCompareDocument.removeEventListener('pointercancel', stopTableCompareDrag, true);
+    tableCompareWindow.removeEventListener('pointercancel', stopTableCompareDrag, true);
+    tableCompareDocument.removeEventListener('mousemove', moveTableCompareDrag, true);
+    tableCompareWindow.removeEventListener('mousemove', moveTableCompareDrag, true);
+    tableCompareDocument.removeEventListener('mousemove', moveTableCompareResize, true);
+    tableCompareWindow.removeEventListener('mousemove', moveTableCompareResize, true);
+    tableCompareDocument.removeEventListener('mouseup', stopTableCompareDrag, true);
+    tableCompareWindow.removeEventListener('mouseup', stopTableCompareDrag, true);
+    if (tableCompareOverlay) {
+      delete tableCompareOverlay.dataset.seed69kDragging;
+      delete tableCompareOverlay.dataset.seed69kResizing;
+    }
+    tableCompareDragState = null;
+    tableCompareResizeState = null;
+  }
+  function moveTableCompareResize(event) {
+    if (!tableCompareResizeState || !tableCompareOverlay) return;
+    var state = tableCompareResizeState;
+    var x = event.clientX == null ? state.startX : Number(event.clientX);
+    var y = event.clientY == null ? state.startY : Number(event.clientY);
+    var dx = x - state.startX;
+    var dy = y - state.startY;
+    var viewportWidth = Math.max(1, Number(tableCompareWindow.innerWidth || window.innerWidth || 1));
+    var viewportHeight = Math.max(1, Number(tableCompareWindow.innerHeight || window.innerHeight || 1));
+    var minWidth = Math.min(240, viewportWidth);
+    var minHeight = Math.min(120, viewportHeight);
+    var left = state.startLeft;
+    var top = state.startTop;
+    var width = state.startWidth;
+    var height = state.startHeight;
+    if (state.direction.indexOf('w') >= 0) {
+      left = Math.max(0, Math.min(state.startLeft + state.startWidth - minWidth, state.startLeft + dx));
+      width = state.startLeft + state.startWidth - left;
+    } else if (state.direction.indexOf('e') >= 0) {
+      width = Math.max(minWidth, Math.min(viewportWidth - state.startLeft, state.startWidth + dx));
+    }
+    if (state.direction.indexOf('n') >= 0) {
+      top = Math.max(0, Math.min(state.startTop + state.startHeight - minHeight, state.startTop + dy));
+      height = state.startTop + state.startHeight - top;
+    } else if (state.direction.indexOf('s') >= 0) {
+      height = Math.max(minHeight, Math.min(viewportHeight - state.startTop, state.startHeight + dy));
+    }
+    tableComparePosition = {left:left, top:top, width:width, height:height};
+    positionTableCompareOverlay(false);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  function startTableCompareResize(event) {
+    if (!tableCompareOverlay || !tableCompareOpen || tableCompareDragState || tableCompareResizeState || (event.button != null && event.button !== 0)) return;
+    var handle = event.currentTarget;
+    var direction = handle && handle.getAttribute ? handle.getAttribute('data-seed69k-resize') : '';
+    if (!direction) return;
+    var rect = tableCompareOverlay.getBoundingClientRect();
+    if (event.currentTarget && event.pointerId != null && event.currentTarget.setPointerCapture) { try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} }
+    tableCompareOverlay.dataset.seed69kResizing = direction;
+    tableCompareResizeState = {direction:direction, startX:Number(event.clientX || 0), startY:Number(event.clientY || 0), startLeft:rect.left, startTop:rect.top, startWidth:rect.width, startHeight:rect.height};
+    tableCompareDocument.addEventListener('pointermove', moveTableCompareResize, true);
+    tableCompareWindow.addEventListener('pointermove', moveTableCompareResize, true);
+    tableCompareDocument.addEventListener('pointerup', stopTableCompareDrag, true);
+    tableCompareWindow.addEventListener('pointerup', stopTableCompareDrag, true);
+    tableCompareDocument.addEventListener('pointercancel', stopTableCompareDrag, true);
+    tableCompareWindow.addEventListener('pointercancel', stopTableCompareDrag, true);
+    tableCompareDocument.addEventListener('mousemove', moveTableCompareResize, true);
+    tableCompareWindow.addEventListener('mousemove', moveTableCompareResize, true);
+    tableCompareDocument.addEventListener('mouseup', stopTableCompareDrag, true);
+    tableCompareWindow.addEventListener('mouseup', stopTableCompareDrag, true);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  function moveTableCompareDrag(event) {
+    if (!tableCompareDragState || !tableCompareOverlay) return;
+    var state = tableCompareDragState;
+    var dx = Number(event.clientX || 0) - state.startX;
+    var dy = Number(event.clientY || 0) - state.startY;
+    tableComparePosition = tableComparePosition || {};
+    tableComparePosition.left = state.startLeft + dx;
+    tableComparePosition.top = state.startTop + dy;
+    positionTableCompareOverlay(false);
+    event.preventDefault();
+  }
+  function startTableCompareDrag(event) {
+    if (!tableCompareOverlay || !tableCompareOpen || (event.button != null && event.button !== 0)) return;
+    var rect = tableCompareOverlay.getBoundingClientRect();
+    if (tableCompareDragState) return;
+    if (event.currentTarget && event.pointerId != null && event.currentTarget.setPointerCapture) { try { event.currentTarget.setPointerCapture(event.pointerId); } catch (_) {} }
+    tableCompareOverlay.dataset.seed69kDragging = '1';
+    tableCompareDragState = {
+      startX: Number(event.clientX || 0), startY: Number(event.clientY || 0),
+      startLeft: rect.left, startTop: rect.top
+    };
+    tableCompareDocument.addEventListener('pointermove', moveTableCompareDrag, true);
+    tableCompareWindow.addEventListener('pointermove', moveTableCompareDrag, true);
+    tableCompareDocument.addEventListener('pointerup', stopTableCompareDrag, true);
+    tableCompareWindow.addEventListener('pointerup', stopTableCompareDrag, true);
+    tableCompareDocument.addEventListener('pointercancel', stopTableCompareDrag, true);
+    tableCompareWindow.addEventListener('pointercancel', stopTableCompareDrag, true);
+    tableCompareDocument.addEventListener('mousemove', moveTableCompareDrag, true);
+    tableCompareWindow.addEventListener('mousemove', moveTableCompareDrag, true);
+    tableCompareDocument.addEventListener('mouseup', stopTableCompareDrag, true);
+    tableCompareWindow.addEventListener('mouseup', stopTableCompareDrag, true);
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  function renderTableCompareContent(box) {
+    if (!tableCompareBody) return;
+    clearSafeContainer(tableCompareBody);
+    var text = boxOcrText(box);
+    if (renderSafeMarkdownTable(tableCompareBody, text)) return;
+    if (box && box.content_html && renderSafeSuryaHtmlTable(tableCompareBody, box.content_html)) return;
+    var doc = tableCompareBody.ownerDocument || editorHostDocument || document;
+    var pre = doc.createElement('pre');
+    pre.className = 'seed69k-safe-pre';
+    pre.textContent = text || 'جدول قابل نمایش نیست.';
+    tableCompareBody.appendChild(pre);
+  }
+  function ensureTableCompareOverlay() {
+    if (tableCompareOverlay) return;
+    ensureTableCompareStyle();
+    tableCompareOverlay = editorHostDocument.createElement('div');
+    tableCompareDocument = tableCompareOverlay.ownerDocument || editorHostDocument || document;
+    tableCompareWindow = tableCompareDocument.defaultView || editorHostWindow || window;
+    tableCompareOverlay.className = 'seed69k-table-compare-overlay';
+    tableCompareOverlay.innerHTML = '<style>.seed69k-table-compare-overlay{display:none!important;position:fixed!important;z-index:2147483646!important;box-sizing:border-box;overflow:hidden;direction:rtl;background:rgba(22,3,9,.94);color:#fff;border:2px solid #ffc107;border-radius:10px;box-shadow:0 14px 44px rgba(0,0,0,.62);font-family:"Vazirmatn",Tahoma,Arial,sans-serif;pointer-events:auto}.seed69k-table-compare-overlay.is-open{display:flex!important;flex-direction:column!important}.seed69k-table-compare-head{display:flex;align-items:center;justify-content:space-between;gap:8px;flex:0 0 auto;box-sizing:border-box;min-height:32px;padding:4px 8px;background:#3a1020;color:#ffc107;font-size:13px;font-weight:800;cursor:move;touch-action:none;user-select:none}.seed69k-table-compare-close{width:24px;height:24px;padding:0;border:1px solid rgba(255,255,255,.55);border-radius:5px;background:transparent;color:#fff;font:18px/20px Arial,sans-serif;cursor:pointer}.seed69k-table-compare-body{min-height:0;flex:1 1 auto;overflow:auto;background:rgba(255,255,255,.96);color:#171717;padding:6px;box-sizing:border-box;direction:rtl}.seed69k-table-compare-body .seed69k-safe-table{width:100%;border-collapse:collapse;table-layout:fixed;direction:rtl;font-family:"Vazirmatn",Tahoma,Arial,sans-serif;font-size:clamp(10px,1.45vw,18px);line-height:1.45}.seed69k-table-compare-body .seed69k-safe-table th,.seed69k-table-compare-body .seed69k-safe-table td{border:1px solid #777;padding:4px 6px;vertical-align:top;text-align:right;direction:rtl;white-space:pre-wrap;overflow-wrap:anywhere}.seed69k-table-compare-body .seed69k-safe-table th{background:#eee8d9;font-weight:800}.seed69k-table-compare-body .seed69k-safe-pre{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;direction:rtl;text-align:right;color:#171717;font:16px/1.8 "Vazirmatn",Tahoma,sans-serif}.seed69k-table-compare-resize{position:absolute!important;z-index:8!important;width:18px!important;height:18px!important;padding:0!important;margin:0!important;background:#ffc107!important;border:2px solid #160309!important;border-radius:50%!important;box-sizing:border-box!important;opacity:.9!important;pointer-events:auto!important}.seed69k-table-compare-resize-nw{left:3px!important;top:3px!important;cursor:nwse-resize!important}.seed69k-table-compare-resize-ne{right:3px!important;top:3px!important;cursor:nesw-resize!important}.seed69k-table-compare-resize-sw{left:3px!important;bottom:3px!important;cursor:nesw-resize!important}.seed69k-table-compare-resize-se{right:3px!important;bottom:3px!important;cursor:nwse-resize!important}</style><div class=\"seed69k-table-compare-head\"><span>🧩 مقایسهٔ جدول</span><button type="button" class="seed69k-table-compare-close" aria-label="بستن مقایسه">×</button></div><div class="seed69k-table-compare-body"></div><div class="seed69k-table-compare-resize seed69k-table-compare-resize-nw" data-seed69k-resize="nw" aria-hidden="true"></div><div class="seed69k-table-compare-resize seed69k-table-compare-resize-ne" data-seed69k-resize="ne" aria-hidden="true"></div><div class="seed69k-table-compare-resize seed69k-table-compare-resize-sw" data-seed69k-resize="sw" aria-hidden="true"></div><div class="seed69k-table-compare-resize seed69k-table-compare-resize-se" data-seed69k-resize="se" aria-hidden="true"></div>';
+    editorHostDocument.body.appendChild(tableCompareOverlay);
+    tableCompareBody = tableCompareOverlay.querySelector('.seed69k-table-compare-body');
+    var head = tableCompareOverlay.querySelector('.seed69k-table-compare-head');
+    var close = tableCompareOverlay.querySelector('.seed69k-table-compare-close');
+    var resizeHandles = tableCompareOverlay.querySelectorAll('[data-seed69k-resize]');
+    for (var resizeIndex = 0; resizeIndex < resizeHandles.length; resizeIndex += 1) {
+      resizeHandles[resizeIndex].addEventListener('pointerdown', startTableCompareResize);
+      resizeHandles[resizeIndex].addEventListener('mousedown', startTableCompareResize);
+    }
+    head.addEventListener('pointerdown', startTableCompareDrag);
+    head.addEventListener('mousedown', startTableCompareDrag);
+    head.addEventListener('mousemove', moveTableCompareDrag);
+    head.addEventListener('mouseup', stopTableCompareDrag);
+    tableCompareOverlay.addEventListener('mousemove', moveTableCompareDrag);
+    tableCompareOverlay.addEventListener('mouseup', stopTableCompareDrag);
+    head.addEventListener('click', function(event) { event.preventDefault(); event.stopImmediatePropagation(); });
+    close.addEventListener('pointerdown', function(event) { event.preventDefault(); event.stopPropagation(); });
+    close.addEventListener('mousedown', function(event) { event.preventDefault(); event.stopPropagation(); });
+    close.addEventListener('click', function(event) { event.preventDefault(); event.stopPropagation(); tableCompareAllowClose = true; try { hideTableCompareOverlay(); } finally { tableCompareAllowClose = false; } });
+  }
+  function openTableCompare(index) {
+    var box = boxes[index];
+    if (!hasDetectedTable(box)) return;
+    ensureTableCompareOverlay();
+    stopTableCompareDrag();
+    tableCompareIndex = index;
+    tableCompareOpen = true;
+    tableComparePosition = null;
+    renderTableCompareContent(box);
+    tableCompareOverlay.classList.add('is-open');
+    positionTableCompareOverlay(true);
+    renderBoxes();
+  }
+  function hideTableCompareOverlay() {
+    if (!tableCompareAllowClose && !tableCompareButtonActivation) return;
+    stopTableCompareDrag();
+    tableCompareOpen = false;
+    tableCompareIndex = -1;
+    tableComparePosition = null;
+    if (tableCompareOverlay) tableCompareOverlay.classList.remove('is-open');
+  }
+  function toggleTableCompare(index) {
+    if (tableCompareOpen && tableCompareIndex === index && tableCompareButtonActivation) hideTableCompareOverlay();
+    else openTableCompare(index);
+    renderBoxes();
+  }
+
+  function savePayload() {
+    return JSON.stringify({page_id: pageId, boxes: boxes, source: 'argilla_custom_field'});
+  }
+  function persistNow(reason) {
+    if (!pageId) {
+      setStatus('خطا در ذخیره: page_id پیدا نشد.');
+      return Promise.resolve(false);
+    }
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    /* Do not allow a late full-array response to overwrite a newer edit. */
+    if (saveInFlight) {
+      saveQueued = true;
+      saveQueuedReason = reason || saveQueuedReason;
+      return saveInFlight;
+    }
+    var payload = savePayload();
+    if (payload === lastSavePayload) return Promise.resolve(true);
+    setStatus('در حال ذخیرهٔ خودکار…');
+    var request = fetch('/seed-layout-edits/' + encodeURIComponent(pageId), {
+      method: 'POST',
+      headers: geminiRequestHeaders(),
+      body: payload,
+      keepalive: true
+    }).then(function(r){ if (!r.ok) throw new Error('save failed'); return r.json(); })
+      .then(function(){
+        lastSavePayload = payload;
+        setStatus(reason ? ('ذخیره شد: ' + reason) : 'ذخیره شد.');
+        return true;
+      })
+      .catch(function(){
+        setStatus('خطا در ذخیرهٔ خودکار؛ دکمهٔ ذخیره را دوباره امتحان کنید.');
+        return false;
+      });
+    saveInFlight = request.then(function(result) {
+      var shouldFlush = saveQueued;
+      var nextReason = saveQueuedReason || reason || '';
+      saveQueued = false;
+      saveQueuedReason = '';
+      saveInFlight = null;
+      return shouldFlush ? persistNow(nextReason) : result;
+    });
+    return saveInFlight;
+  }
+  function scheduleSave(reason, delay) {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    /* Layout edits, including delete-all, must reach the server before navigation. */
+    if (delay != null && Number(delay) > 0) {
+      saveTimer = setTimeout(function(){ saveTimer = null; persistNow(reason); }, Number(delay));
+      return;
+    }
+    persistNow(reason);
+  }
+  function writeOcrTextForSelected(next, reason, shouldRender) {
+    if (selected < 0 || !boxes[selected]) return false;
+    next = cleanDisplayedOcrText(String(next || ''));
+    if (next === boxOcrText(boxes[selected])) return false;
+    var key = String(boxes[selected].id != null ? boxes[selected].id : selected);
+    if (ocrInputUndoKey !== key) { pushUndo('تغيير OCR'); ocrInputUndoKey = key; }
+    boxes[selected] = cloneBoxValue(boxes[selected]);
+    boxes[selected].content_text = next;
+    boxes[selected].content_html = textToHtml(next);
+    boxes[selected].content_source = 'human_edit';
+    boxes[selected].source = 'human_edit';
+    if (shouldRender) renderBoxes();
+    scheduleSave(reason || 'OCR bbox', shouldRender ? null : 400);
+    return true;
+  }
+  function syncOcrInputText(next) { writeOcrTextForSelected(next, 'OCR bbox', false); }
+  function resolveEditorTargetIndex(targetId) {
+    if (targetId) {
+      for (var i = 0; i < boxes.length; i += 1) {
+        if (String(boxes[i] && boxes[i].id || '') === String(targetId)) return i;
+      }
+    }
+    return selected;
+  }
+  function commitOcrIfChanged(reason, targetId) {
+    var targetIndex = resolveEditorTargetIndex(targetId || ocrFocusedBoxId || ocrEditorBoxId);
+    if (targetIndex < 0 || !boxes[targetIndex] || !ocrTextarea) return false;
+    var next = cleanDisplayedOcrText(String(ocrTextarea.value || ''));
+    if (next === boxOcrText(boxes[targetIndex])) { ocrInputUndoKey = ''; return false; }
+    var key = String(boxes[targetIndex].id != null ? boxes[targetIndex].id : targetIndex);
+    if (ocrInputUndoKey !== key) { pushUndo('تغییر OCR'); ocrInputUndoKey = key; }
+    boxes[targetIndex] = cloneBoxValue(boxes[targetIndex]);
+    boxes[targetIndex].content_text = next;
+    boxes[targetIndex].content_html = textToHtml(next);
+    boxes[targetIndex].content_source = 'human_edit';
+    boxes[targetIndex].source = 'human_edit';
+    renderBoxes();
+    scheduleSave(reason || 'OCR bbox');
+    ocrInputUndoKey = '';
+    return true;
+  }
+  function activeLabel() {
+    if (selected >= 0 && boxes[selected]) return boxes[selected].label || 'Text';
+    return classSelect ? classSelect.value : 'Text';
+  }
+  function syncClassButtons() {
+    Array.prototype.slice.call(root.querySelectorAll('.seed69k-class-chip')).forEach(function(btn){
+      btn.classList.toggle('seed69k-active', btn.dataset.label === activeLabel());
+    });
+    Array.prototype.slice.call(floatingEditor.querySelectorAll('.seed69k-class-chip')).forEach(function(btn){
+      btn.classList.toggle('seed69k-active', btn.dataset.label === activeLabel());
+    });
+  }
+  function applySelectedClass(label) {
+    label = normalizeLabel(label);
+    if (classSelect) classSelect.value = label;
+    if (selected >= 0 && boxes[selected]) {
+      pushUndo('تغییر کلاس');
+      boxes[selected].label = label;
+      boxes[selected].source = 'human_edit';
+      renderBoxes();
+      floatingEditor.style.display = 'none';
+      scheduleSave('تغییر کلاس');
+      setStatus('کلاس ناحیه به «' + (classDisplay[label] || label) + '» تغییر کرد؛ در حال ذخیرهٔ خودکار…');
+    } else {
+      setStatus('اول روی یک bbox کلیک کنید، بعد کلاس را تغییر دهید.');
+      syncClassButtons();
+    }
+  }
+  function buildClassPalette(container) {
+    if (!container) return;
+    container.innerHTML = '';
+    classOptions.forEach(function(label) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'seed69k-class-chip';
+      btn.dataset.label = label;
+      btn.textContent = classDisplay[label] || label;
+      btn.addEventListener('pointerdown', function(ev){ ev.preventDefault(); ev.stopPropagation(); });
+      btn.addEventListener('click', function(ev){
+        ev.preventDefault();
+        ev.stopPropagation();
+        applySelectedClass(label);
+      });
+      container.appendChild(btn);
+    });
+  }
+  buildClassPalette(classPalette);
+  buildClassPalette(floatingEditor.querySelector('.seed69k-floating-palette'));
+  function boxRectPct(box) {
+    var left = Number(box.left_pct || 0);
+    var top = Number(box.top_pct || 0);
+    var width = Math.max(0, Number(box.width_pct || 0));
+    var height = Math.max(0, Number(box.height_pct || 0));
+    return {left:left, top:top, right:left + width, bottom:top + height, width:width, height:height};
+  }
+  function computeOverlapData() {
+    var areas = [];
+    var overlapping = {};
+    var active = boxes.map(function(box, index){ return {box:box, index:index, rect:boxRectPct(box)}; })
+      .filter(function(item){ return item.box && !item.box.deleted && item.rect.width > 0 && item.rect.height > 0; });
+    for (var i = 0; i < active.length; i++) {
+      for (var j = i + 1; j < active.length; j++) {
+        var a = active[i], b = active[j];
+        var left = Math.max(a.rect.left, b.rect.left);
+        var top = Math.max(a.rect.top, b.rect.top);
+        var right = Math.min(a.rect.right, b.rect.right);
+        var bottom = Math.min(a.rect.bottom, b.rect.bottom);
+        var width = right - left;
+        var height = bottom - top;
+        if (width <= 0 || height <= 0) continue;
+        var overlapArea = width * height;
+        if (overlapArea < 0.01) continue;
+        overlapping[a.index] = true;
+        overlapping[b.index] = true;
+        areas.push({left:left, top:top, width:width, height:height});
+      }
+    }
+    return {areas:areas, overlapping:overlapping};
+  }
+  function renderOverlapAreas(areas) {
+    areas.forEach(function(area) {
+      var el = document.createElement('div');
+      el.className = 'seed69k-overlap-area';
+      el.style.left = Number(area.left || 0).toFixed(4) + '%';
+      el.style.top = Number(area.top || 0).toFixed(4) + '%';
+      el.style.width = Number(area.width || 0).toFixed(4) + '%';
+      el.style.height = Number(area.height || 0).toFixed(4) + '%';
+      el.title = 'ناحیهٔ هم‌پوشانی bboxها';
+      stage.appendChild(el);
+    });
+  }
+  function setAddMode(on) {
+    addMode = !!on;
+    if (addButton) addButton.classList.toggle('seed69k-active', addMode);
+    if (addMode) {
+      enableEditMode();
+      floatingEditor.style.display = 'none';
+      hideActiveHoverTip();
+      setStatus('حالت افزودن فعال است؛ روی جای خالی تصویر بکشید تا bbox جدید ساخته شود.');
+    }
+  }
+  function renderBoxes() {
+    stage.classList.toggle('seed69k-all-selected', !!allSelected);
+    Array.prototype.slice.call(stage.querySelectorAll('.seed69k-layout-box')).forEach(function(n){ n.remove(); });
+    Array.prototype.slice.call(stage.querySelectorAll('.seed69k-overlap-area')).forEach(function(n){ n.remove(); });
+    removeDetachedTips();
+    var overlapData = computeOverlapData();
+    boxes.forEach(function(box, index) {
+      if (box.deleted) return;
+    normalizeBox(box);
+    var el = document.createElement('div');
+    el.className = 'seed69k-layout-box';
+    if (index === selected || allSelected) el.classList.add('seed69k-selected');
+    if (overlapData.overlapping[index]) el.classList.add('seed69k-overlapping');
+    el.style.left = Number(box.left_pct || 0).toFixed(4) + '%';
+    el.style.top = Number(box.top_pct || 0).toFixed(4) + '%';
+    el.style.width = Number(box.width_pct || 0).toFixed(4) + '%';
+    el.style.height = Number(box.height_pct || 0).toFixed(4) + '%';
+    el.dataset.index = String(index);
+    el.dataset.boxId = box.id == null ? '' : String(box.id);
+    el.title = 'کلیک برای انتخاب/ویرایش bbox';
+    var badge = document.createElement('span');
+    badge.className = 'seed69k-box-label';
+    badge.textContent = classDisplay[box.label] || box.label || 'ناحیه';
+    el.appendChild(badge);
+    if (hasDetectedTable(box)) {
+      var tableButton = document.createElement('button');
+      tableButton.type = 'button';
+      tableButton.className = 'seed69k-table-compare-button';
+      tableButton.textContent = '🧩';
+      tableButton.title = 'باز کردن جدول برای مقایسه';
+      tableButton.setAttribute('aria-label', 'باز کردن جدول برای مقایسه');
+      tableButton.setAttribute('aria-pressed', tableCompareOpen && tableCompareIndex === index ? 'true' : 'false');
+      tableButton.addEventListener('pointerdown', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+      });
+      tableButton.addEventListener('click', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        tableCompareButtonActivation = true;
+        try { toggleTableCompare(index); } finally { tableCompareButtonActivation = false; }
+      });
+      el.appendChild(tableButton);
+    }
+    var tip = document.createElement('div');
+    tip.className = 'seed69k-layout-tip';
+    tip.dataset.seed69kRoot = stage.dataset.layoutUid;
+    var score = box.score == null ? '' : (' · ' + Number(box.score).toFixed(2));
+    var pos = box.position == null ? '' : (' · #' + box.position);
+    var head = document.createElement('div');
+    head.className = 'tip-head';
+    head.textContent = classDisplay[normalizeLabel(box.label || 'Layout')] || normalizeLabel(box.label || 'ناحیه'); head.textContent += score + pos;
+    var content = document.createElement('div');
+    content.className = 'tip-content';
+    var safeBoxText = boxOcrText(box);
+    if (safeBoxText) {
+      var hoverPreview = safeBoxText.length > 320
+        ? safeBoxText.slice(0, 320).replace(/\s+$/, '') + '…'
+        : safeBoxText;
+      content.textContent = hoverPreview;
+    } else {
+      content.className = 'tip-content tip-muted';
+      content.textContent = 'OCR/ساختار متنی برای این ناحیه هنوز آماده نیست.';
+    }
+    tip.appendChild(head);
+    tip.appendChild(content);
+    document.body.appendChild(tip);
+    function placeTip(ev) {
+      if (index === selected || addMode || pendingDraw || (drag && drag.mode === 'draw')) {
+        if (activeHoverTip === tip) hideActiveHoverTip();
+        else tip.style.display = 'none';
+        return;
+      }
+      if (!el.isConnected || !ev || !(ev.target === el || el.contains(ev.target))) {
+        if (activeHoverTip === tip) hideActiveHoverTip();
+        return;
+      }
+      if (activeHoverTip && activeHoverTip !== tip) activeHoverTip.style.display = 'none';
+      activeHoverTip = tip;
+      var br = el.getBoundingClientRect();
+      tip.style.display = 'block';
+      var rect = tip.getBoundingClientRect();
+      var tw = Math.min(window.innerWidth - 20, Math.max(160, rect.width || 260));
+      var th = Math.min(window.innerHeight - 20, Math.max(60, rect.height || 90));
+      var left = Math.max(10, Math.min(window.innerWidth - tw - 10, br.left));
+      var top = br.top - th - 10;
+      if (top < 10) top = Math.min(window.innerHeight - th - 10, br.bottom + 10);
+      tip.style.left = Math.round(left) + 'px';
+      tip.style.top = Math.round(Math.max(10, top)) + 'px';
+    }
+    el.addEventListener('mouseenter', placeTip);
+    el.addEventListener('mousemove', placeTip);
+    el.addEventListener('mouseleave', function(){
+      if (activeHoverTip === tip) hideActiveHoverTip();
+      else tip.style.display = 'none';
+    });
+    /* Selection is handled once by the stage pointerdown listener. */
+    ['nw','ne','sw','se'].forEach(function(corner) {
+      var handle = document.createElement('span');
+      handle.className = 'seed69k-resize-handle seed69k-corner-' + corner;
+      handle.dataset.corner = corner;
+      handle.title = 'تغییر اندازه از گوشهٔ ' + corner;
+      el.appendChild(handle);
+    });
+    stage.appendChild(el);
+  });
+    renderOverlapAreas(overlapData.areas);
+    syncClassButtons();
+    placeFloatingEditor();
+  }
+  function cleanDisplayedOcrText(value) {
+    return String(value || '').replace(/[\u2066-\u2069]/g, '');
+  }
+  function displayTableOcrText(value) {
+    return cleanDisplayedOcrText(value);
+  }
+  function syncOcrTextareaDirection(box) {
+    if (!ocrTextarea) return;
+    var value = boxOcrText(box);
+    var isTable = !!box && (
+      normalizeLabel(box.label || '') === 'Table' ||
+      !!box.contains_markdown_table ||
+      hasMarkdownTable(value)
+    );
+    var direction = 'rtl';
+    ocrTextarea.style.direction = direction;
+    ocrTextarea.style.textAlign = 'right';
+    ocrTextarea.style.unicodeBidi = 'normal';
+    ocrTextarea.setAttribute('dir', direction);
+    if (isTable && cleanDisplayedOcrText(ocrTextarea.value) === value) {
+      ocrTextarea.value = displayTableOcrText(value);
+    }
+  }
+  function placeFloatingEditor(ev) {
+    /* Internal textarea/table scrolling must not change popup geometry. */
+    var eventTarget = ev && ev.target;
+    var isNodeTarget = !!(eventTarget && typeof eventTarget.nodeType === 'number');
+    if (ev && floatingEditor && isNodeTarget && (eventTarget === floatingEditor || floatingEditor.contains(eventTarget))) return;
+    if (addMode || pendingDraw || (drag && drag.mode === 'draw') || selected < 0 || !boxes[selected] || !stage.classList.contains('seed69k-edit-mode')) {
+      floatingEditor.style.display = 'none';
+      return;
+    }
+    syncOcrTextareaDirection(boxes[selected]);
+    var selectedEl = stage.querySelector('.seed69k-layout-box.seed69k-selected');
+    if (!selectedEl) { floatingEditor.style.display = 'none'; return; }
+    var br = selectedEl.getBoundingClientRect();
+    floatingEditor.style.display = 'flex';
+    floatingEditor.style.flexDirection = 'column';
+    floatingEditor.style.alignItems = 'stretch';
+    var selectedEditorBoxId = String(boxes[selected] && boxes[selected].id != null ? boxes[selected].id : '');
+    if (ocrTextarea && ocrEditorBoxId !== selectedEditorBoxId) {
+      ocrTextarea.value = boxOcrText(boxes[selected]);
+      ocrEditorBoxId = selectedEditorBoxId;
+    }
+    syncOcrTextareaDirection(boxes[selected]);
+    updateMarkdownPreview(
+      ocrTextarea ? ocrTextarea.value : boxOcrText(boxes[selected])
+    );
+    var frameRect = editorFrameElement ? editorFrameElement.getBoundingClientRect() : {left:0, top:0};
+    var globalBox = {
+      left: br.left + frameRect.left,
+      top: br.top + frameRect.top,
+      bottom: br.bottom + frameRect.top,
+      width: br.width
+    };
+    var margin = 8, gap = 10;
+    var visualViewport = editorHostWindow.visualViewport;
+    var viewport = {
+      left:visualViewport ? Number(visualViewport.offsetLeft || 0) : 0,
+      top:visualViewport ? Number(visualViewport.offsetTop || 0) : 0,
+      width:visualViewport ? Number(visualViewport.width || 0) : (editorHostWindow.innerWidth || 0),
+      height:visualViewport ? Number(visualViewport.height || 0) : (editorHostWindow.innerHeight || 0)
+    };
+    viewport.right = viewport.left + viewport.width;
+    viewport.bottom = viewport.top + viewport.height;
+    var viewportWidth = viewport.width, viewportHeight = viewport.height;
+    var popupWidth = Math.max(280, Math.min(360, viewportWidth - margin * 2));
+    var targetPanelHeight = Math.max(240, Math.min(360, viewportHeight - margin * 2, Math.round(viewportHeight * 0.50)));
+    if (floatingEditorManualSize) {
+      popupWidth = Math.max(280, Math.min(floatingEditorManualSize.width, viewportWidth - margin * 2));
+      targetPanelHeight = Math.max(240, Math.min(floatingEditorManualSize.height, viewportHeight - margin * 2));
+    }
+    var stageRect = stage.getBoundingClientRect();
+    var globalStageLeft = stageRect.left + frameRect.left;
+    var globalStageRight = stageRect.right + frameRect.left;
+    var rightBoundary = viewport.right - margin;
+    if (toolbar) {
+      var toolbarStyle = window.getComputedStyle(toolbar);
+      if (toolbarStyle && toolbarStyle.position === 'fixed') {
+        var toolbarRect = toolbar.getBoundingClientRect();
+        rightBoundary = Math.min(rightBoundary, toolbarRect.left + frameRect.left - gap);
+      }
+    }
+    var leftGap = Math.max(0, globalStageLeft - (viewport.left + margin) - gap);
+    var rightGap = Math.max(0, rightBoundary - globalStageRight - gap);
+    var useSideGutter = Math.max(leftGap, rightGap) >= Math.min(360, popupWidth * 0.75);
+    var useLeftGutter = useSideGutter && leftGap >= rightGap;
+    if (useSideGutter) {
+      var gutterWidth = useLeftGutter ? leftGap : rightGap;
+      popupWidth = Math.max(180, Math.min(popupWidth, gutterWidth));
+    }
+    var popupCenter = globalBox.left + globalBox.width / 2;
+    var left;
+    var top;
+    if (useLeftGutter) {
+      left = globalStageLeft - gap - popupWidth;
+      top = globalBox.top;
+    } else if (useSideGutter) {
+      left = globalStageRight + gap;
+      top = globalBox.top;
+    } else {
+      left = Math.max(
+        viewport.left + margin,
+        Math.min(viewport.right - popupWidth - margin, popupCenter - popupWidth / 2)
+      );
+      var roomBelow = viewport.bottom - globalBox.bottom - gap - margin;
+      top = roomBelow >= 160
+        ? globalBox.bottom + gap
+        : Math.max(viewport.top + margin, globalBox.top - gap - targetPanelHeight);
+    }
+    top = Math.max(
+      viewport.top + margin,
+      Math.min(viewport.bottom - targetPanelHeight - margin, top)
+    );
+    if (typeof floatingEditorManualPosition !== 'undefined' && floatingEditorManualPosition) {
+      left = Math.max(
+        viewport.left + margin,
+        Math.min(viewport.right - popupWidth - margin, floatingEditorManualPosition.left)
+      );
+      top = Math.max(
+        viewport.top + margin,
+        Math.min(
+          viewport.bottom - targetPanelHeight - margin,
+          floatingEditorManualPosition.top
+        )
+      );
+      floatingEditorManualPosition = {left:left, top:top};
+    }
+    var availableBelow = Math.max(240, Math.min(targetPanelHeight, viewport.bottom - top - margin));
+    floatingEditor.style.width = Math.round(popupWidth) + 'px';
+    floatingEditor.style.minWidth = '0';
+    floatingEditor.style.maxWidth = Math.round(popupWidth) + 'px';
+    floatingEditor.style.left = Math.round(left) + 'px';
+    floatingEditor.style.top = Math.round(top) + 'px';
+    floatingEditor.style.height = floatingEditorManualSize ? Math.round(Math.min(floatingEditorManualSize.height, availableBelow)) + 'px' : 'auto';
+    floatingEditor.style.maxHeight = floatingEditorManualSize ? Math.round(Math.min(floatingEditorManualSize.height, availableBelow)) + 'px' : Math.round(availableBelow) + 'px';
+    if (ocrTextarea) {
+      ocrTextarea.style.flex = '1 1 0px';
+      ocrTextarea.style.height = 'auto';
+      ocrTextarea.style.minHeight = '52px';
+      ocrTextarea.style.maxHeight = 'none';
+      ocrTextarea.style.overflowY = 'auto';
+      var textareaWrap = ocrTextarea.parentElement && ocrTextarea.parentElement.classList.contains('seed69k-ocr-textarea-wrap') ? ocrTextarea.parentElement : null;
+      if (textareaWrap) { textareaWrap.style.flex = '1 1 0'; textareaWrap.style.height = 'auto'; }
+      syncOcrTextareaWithEditor();
+    }
+    syncClassButtons();
+  }
+  function selectBox(index) {
+    if (!tableCompareOpen || tableCompareIndex !== index) hideTableCompareOverlay();
+    allSelected = false;
+    ocrInputUndoKey = '';
+    selected = index;
+    enableEditMode();
+    if (!stage.hasAttribute('tabindex')) stage.setAttribute('tabindex', '0');
+    try { stage.focus({preventScroll:true}); } catch (e) { try { window.focus(); } catch (_) {} }
+    if (classSelect && boxes[index]) classSelect.value = boxes[index].label || 'Text';
+    if (ocrTextarea && boxes[index]) {
+      ocrTextarea.value = boxOcrText(boxes[index]);
+      ocrEditorBoxId = String(boxes[index].id != null ? boxes[index].id : '');
+    }
+    updateMarkdownPreview(
+      ocrTextarea ? ocrTextarea.value : boxOcrText(boxes[index])
+    );
+    renderBoxes();
+  }
+  function clearSelectedBox(reason) {
+    hideTableCompareOverlay();
+    if (selected < 0 && !allSelected && floatingEditor.style.display === 'none') return;
+    commitOcrIfChanged('OCR bbox');
+    selected = -1;
+    ocrInputUndoKey = '';
+    ocrEditorBoxId = '';
+    ocrFocusedBoxId = '';
+    allSelected = false;
+    addMode = false;
+    pendingDraw = null;
+    if (editToggle) editToggle.checked = false;
+    if (addButton) addButton.classList.remove('seed69k-active');
+    stage.classList.remove('seed69k-edit-mode');
+    floatingEditor.style.display = 'none';
+    hideActiveHoverTip();
+    renderBoxes();
+    if (reason) setStatus(reason);
+  }
+  function duplicateSelectedBox() {
+    if (selected < 0 || !boxes[selected]) {
+      setStatus('اول یک bbox را انتخاب کنید، بعد دکمهٔ کپی ناحیه را بزنید.');
+      return;
+    }
+    pushUndo('کپی ناحیه');
+    var src = boxes[selected];
+    var copy = JSON.parse(JSON.stringify(src));
+    var offset = 1.5;
+    var width = Math.max(0.1, Number(copy.width_pct || 0.1));
+    var height = Math.max(0.1, Number(copy.height_pct || 0.1));
+    copy.id = 'dup-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    copy.left_pct = Math.max(0, Math.min(100 - width, Number(copy.left_pct || 0) + offset));
+    copy.top_pct = Math.max(0, Math.min(100 - height, Number(copy.top_pct || 0) + offset));
+    copy.width_pct = width;
+    copy.height_pct = height;
+    /*
+     * A duplicate is a placement aid, not a second reference to the source
+     * content.  Do not carry OCR/model output into the new bbox: otherwise
+     * running OCR on one copy appears to update all copies because they all
+     * started with the same inherited text.
+     */
+    ['content_text', 'content_html', 'content_source', 'text', 'ocr_text',
+     'transcription', 'prediction', 'model_output', 'raw_text'].forEach(function(key) {
+      if (Object.prototype.hasOwnProperty.call(copy, key)) copy[key] = '';
+    });
+    copy.source = 'human_duplicate';
+    boxes.push(copy);
+    selected = boxes.length - 1;
+    ocrEditorBoxId = String(copy.id);
+    /* Reset the editor immediately; a copied placement must never inherit the
+       previous bbox's live textarea value, even while the button still has
+       focus. */
+    if (ocrTextarea) ocrTextarea.value = boxOcrText(copy);
+    updateMarkdownPreview(ocrTextarea ? ocrTextarea.value : '');
+    renderBoxes();
+    placeFloatingEditor();
+    scheduleSave('کپی ناحیه');
+    setStatus('bbox کپی شد؛ در حال ذخیرهٔ خودکار…');
+  }
+  function isTextInputTarget(ev) {
+    var tag = (ev.target && ev.target.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select' || (ev.target && ev.target.isContentEditable);
+  }
+  function pointPct(ev) {
+    var rect = stage.getBoundingClientRect();
+    var localWidth = Math.max(1, stage.offsetWidth || rect.width);
+    var localHeight = Math.max(1, stage.offsetHeight || rect.height);
+    var centerX = rect.left + rect.width / 2;
+    var centerY = rect.top + rect.height / 2;
+    var dx = ev.clientX - centerX;
+    var dy = ev.clientY - centerY;
+    var angle = (Number(rotationDegrees) || 0) * Math.PI / 180;
+    var cos = Math.cos(angle);
+    var sin = Math.sin(angle);
+    var localX = cos * dx + sin * dy + localWidth / 2;
+    var localY = -sin * dx + cos * dy + localHeight / 2;
+    return {
+      x: Math.max(0, Math.min(100, 100 * localX / localWidth)),
+      y: Math.max(0, Math.min(100, 100 * localY / localHeight))
+    };
+  }
+  renderBoxes();
+  function renderPixelBoxesWhenImageReady() {
+    boxes.forEach(normalizeBox);
+    renderBoxes();
+    lastSavePayload = savePayload();
+  }
+  if (img && img.complete && img.naturalWidth) {
+    renderPixelBoxesWhenImageReady();
+  } else if (img) {
+    img.addEventListener('load', renderPixelBoxesWhenImageReady, {once:true});
+  }
+  lastSavePayload = savePayload();
+  fetch('/seed-layout-edits/' + encodeURIComponent(pageId), {headers: geminiRequestHeaders()}).then(function(r){ return r.ok ? r.json() : null; }).then(function(data){
+    if (data && data.exists !== false && Array.isArray(data.boxes)) {
+      boxes = normalizeBoxes(data.boxes);
+      selected = -1;
+      renderBoxes();
+      lastSavePayload = savePayload();
+      setStatus('ویرایش ذخیره‌شده بارگذاری شد.');
+    }
+  }).catch(function(){});
+  if (classSelect) classSelect.addEventListener('change', function(){
+    applySelectedClass(classSelect.value);
+  });
+  if (classSelect) {
+    classSelect.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+    classSelect.addEventListener('click', function(ev){ ev.stopPropagation(); });
+  }
+  if (addButton) {
+    addButton.addEventListener('pointerdown', function(ev){ ev.stopPropagation(); });
+    addButton.addEventListener('click', function(ev){
+      ev.preventDefault();
+      ev.stopPropagation();
+      setAddMode(!addMode);
+    });
+  }
+  if (deleteButton) deleteButton.addEventListener('click', function(){
+    if (allSelected) {
+      var allCount = boxes.length;
+      if (!allCount) return;
+      pushUndo('حذف همهٔ bboxها');
+      boxes.splice(0, boxes.length);
+      allSelected = false;
+      selected = -1;
+      renderBoxes();
+      scheduleSave('حذف همهٔ bboxها');
+      setStatus('همهٔ bboxها حذف شدند؛ در حال ذخیرهٔ خودکار…');
+      return;
+    }
+    if (selected >= 0 && boxes[selected]) {
+      pushUndo('حذف bbox');
+      boxes.splice(selected, 1);
+      selected = -1;
+      renderBoxes();
+      scheduleSave('حذف bbox');
+      setStatus('bbox حذف شد؛ در حال ذخیرهٔ خودکار…');
+    }
+  });
+  var lastHandledShortcut = {signature:'', at:0};
+  function handleShortcut(ev, fromParent) {
+    var key = String(ev.key || '').toLowerCase();
+    var metaOrCtrl = !!(ev.metaKey || ev.ctrlKey);
+    var shift = !!ev.shiftKey;
+    var signature = (metaOrCtrl ? 'm-' : '') + (shift ? 's-' : '') + key;
+    var now = Date.now();
+    if (
+      signature === lastHandledShortcut.signature &&
+      now - lastHandledShortcut.at < 180
+    ) {
+      if (ev.preventDefault) ev.preventDefault();
+      return true;
+    }
+    if (metaOrCtrl && key === 'a' && !shift) {
+      if (isTextInputTarget(ev)) return false;
+      if (ev.preventDefault) ev.preventDefault();
+      lastHandledShortcut = {signature:signature, at:now};
+      commitOcrIfChanged('OCR bbox');
+      allSelected = true;
+      selected = -1;
+      addMode = false;
+      if (addButton) addButton.classList.remove('seed69k-active');
+      enableEditMode();
+      floatingEditor.style.display = 'none';
+      hideActiveHoverTip();
+      renderBoxes();
+      setStatus('همهٔ bboxها انتخاب شدند.');
+      return true;
+    }
+    if (metaOrCtrl && key === 'z' && !shift) {
+      if (isTextInputTarget(ev)) return false;
+      if (ev.preventDefault) ev.preventDefault();
+      lastHandledShortcut = {signature:signature, at:now};
+      undoLast();
+      return true;
+    }
+    if (metaOrCtrl && key === 'd' && !shift) {
+      if (ev.preventDefault) ev.preventDefault();
+      lastHandledShortcut = {signature:signature, at:now};
+      commitOcrIfChanged('OCR bbox');
+      duplicateSelectedBox();
+      return true;
+    }
+    if ((ev.key === 'Delete' || ev.key === 'Backspace') && allSelected) {
+      if (isTextInputTarget(ev)) return false;
+      if (ev.preventDefault) ev.preventDefault();
+      lastHandledShortcut = {signature:signature, at:now};
+      var removedCount = boxes.length;
+      pushUndo('حذف همهٔ bboxها');
+      boxes.splice(0, boxes.length);
+      allSelected = false;
+      selected = -1;
+      renderBoxes();
+      scheduleSave('حذف همهٔ bboxها');
+      setStatus('همهٔ bboxها حذف شدند؛ در حال ذخیرهٔ خودکار…');
+      return true;
+    }
+    if ((ev.key === 'Delete' || ev.key === 'Backspace') && selected >= 0 && boxes[selected]) {
+      if (isTextInputTarget(ev)) return false;
+      if (ev.preventDefault) ev.preventDefault();
+      lastHandledShortcut = {signature:signature, at:now};
+      pushUndo('حذف bbox');
+      boxes.splice(selected, 1);
+      selected = -1;
+      renderBoxes();
+      scheduleSave('حذف bbox');
+      setStatus('bbox حذف شد؛ در حال ذخیرهٔ خودکار…');
+      return true;
+    }
+    return false;
+  }
+  window.addEventListener('keydown', function(ev){ handleShortcut(ev, false); }, true);
+  document.addEventListener('keydown', function(ev){ handleShortcut(ev, false); }, true);
+  function handleEditorHostKeyDown(ev) {
+    if (editorHostDocument === document) return;
+    handleShortcut(ev, true);
+  }
+  window.addEventListener('message', function(ev){
+    var data = ev && ev.data;
+    if (!data || data.type !== 'seed69k-bbox-shortcut') return;
+    handleShortcut({
+      key: data.key,
+      metaKey: !!data.metaKey,
+      ctrlKey: !!data.ctrlKey,
+      shiftKey: !!data.shiftKey,
+      preventDefault: function(){}
+    }, true);
+  });
+  if (saveOcrButton) saveOcrButton.addEventListener('click', function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (selected < 0 || !boxes[selected]) {
+      setStatus('اول یک bbox را انتخاب کنید.');
+      return;
+    }
+    pushUndo('تغییر OCR');
+    var text = ocrTextarea ? ocrTextarea.value : '';
+    boxes[selected].content_text = text;
+    boxes[selected].content_html = textToHtml(text);
+    boxes[selected].content_source = 'human_edit';
+    boxes[selected].source = 'human_edit';
+    renderBoxes();
+    floatingEditor.style.display = 'none';
+    scheduleSave('تغییر OCR');
+    setStatus('متن OCR bbox ثبت شد؛ در حال ذخیرهٔ خودکار…');
+  });
+  function resizeOcrTextareaForInput() {
+    if (!ocrTextarea) return;
+    if (floatingEditorManualSize) {
+      syncOcrTextareaWithEditor();
+      return;
+    }
+    var viewport = editorViewportMetrics();
+    var textareaTop = ocrTextarea.getBoundingClientRect().top;
+    var maxHeight = Math.max(
+      52,
+      Math.min(420, viewport.height * 0.48, viewport.bottom - textareaTop - 96)
+    );
+    ocrTextarea.style.height = '0px';
+    var desiredHeight = Math.max(52, ocrTextarea.scrollHeight + 2);
+    ocrTextarea.style.height = Math.min(desiredHeight, maxHeight) + 'px';
+    ocrTextarea.style.maxHeight = maxHeight + 'px';
+    ocrTextarea.style.minHeight = '0';
+    ocrTextarea.style.overflowY = desiredHeight > maxHeight ? 'auto' : 'hidden';
+  }
+  if (ocrTextarea) {
+    ocrTextarea.addEventListener('focus', function(){
+      ocrFocusedBoxId = ocrEditorBoxId;
+    });
+    ocrTextarea.addEventListener('input', function(){
+      syncOcrInputText(ocrTextarea.value || '');
+      updateMarkdownPreview(ocrTextarea.value || '');
+      resizeOcrTextareaForInput();
+    });
+    ocrTextarea.addEventListener('blur', function(){
+      var focusedId = ocrFocusedBoxId || ocrEditorBoxId;
+      commitOcrIfChanged('OCR bbox', focusedId);
+      ocrFocusedBoxId = '';
+    });
+    ocrTextarea.addEventListener('change', function(){
+      commitOcrIfChanged('OCR bbox', ocrFocusedBoxId || ocrEditorBoxId);
+    });
+  }
+  if (clearOcrButton) clearOcrButton.addEventListener('click', function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (selected < 0 || !boxes[selected]) {
+      setStatus('اول یک bbox را انتخاب کنید.');
+      return;
+    }
+    pushUndo('خالی کردن OCR');
+    boxes[selected].content_text = '';
+    boxes[selected].content_html = '';
+    boxes[selected].content_source = 'human_edit';
+    boxes[selected].source = 'human_edit';
+    if (ocrTextarea) ocrTextarea.value = '';
+    renderBoxes();
+    scheduleSave('خالی کردن OCR');
+    setStatus('OCR این bbox خالی شد؛ در حال ذخیرهٔ خودکار…');
+  });
+  function selectedBoxPayload() {
+    if (selected < 0 || !boxes[selected]) return null;
+    return {
+      page_id: pageId,
+      image_src: img ? (img.dataset.authSource || field.src || '') : (field.src || ''),
+      /* Snapshot the request; never let a later selection/edit mutate it. */
+      box: cloneBoxValue(boxes[selected])
+    };
+  }
+  function runStallionSurya2Ocr(payload) {
+    setStatus('⚡ Surya 2 روی تیزپا در حال خواندن ناحیه است…');
+    return fetch('/seed-ocr-surya2-box', {
+      method: 'POST',
+      headers: geminiRequestHeaders(),
+      body: JSON.stringify(payload)
+    }).then(function(response) {
+      return response.json().catch(function() { return {}; }).then(function(data) {
+        if (!response.ok) {
+          var error = new Error(data.detail || data.message || 'Surya OCR 2 failed');
+          error.busy = response.status === 429;
+          throw error;
+        }
+        return data;
+      });
+    });
+  }
+  function resolveOcrTargetIndex(index, targetId) {
+    if (targetId != null && String(targetId) !== '') {
+      for (var i = 0; i < boxes.length; i += 1) {
+        if (String(boxes[i] && boxes[i].id || '') === String(targetId)) return i;
+      }
+      throw new Error('selected bbox no longer exists');
+    }
+    if (!boxes[index]) throw new Error('bbox removed while OCR was running');
+    return index;
+  }
+  function copyOnWriteOcrTarget(index, targetId) {
+    index = resolveOcrTargetIndex(index, targetId);
+    /* Never mutate an object that could be shared by a copied bbox. */
+    var isolated = cloneBoxValue(boxes[index]);
+    boxes[index] = isolated;
+    return isolated;
+  }
+
+  function ocrTargetWasUnchanged(index, targetSnapshot) {
+    if (!targetSnapshot || !boxes[index]) return true;
+    /* A late response must never overwrite a newer manual edit. */
+    if (JSON.stringify(boxes[index]) !== targetSnapshot) return false;
+    if (selected === index && ocrTextarea && ocrTextarea.value !== boxOcrText(boxes[index])) return false;
+    return true;
+  }
+
+  function applySurya2OcrResult(data, targetIndex, targetId, targetSnapshot) {
+    targetIndex = resolveOcrTargetIndex(targetIndex, targetId);
+    if (!boxes[targetIndex]) throw new Error('bbox removed while OCR was running');
+    if (!ocrTargetWasUnchanged(targetIndex, targetSnapshot)) {
+      setStatus('نتیجهٔ دیررس OCR نادیده گرفته شد چون این bbox بعداً ویرایش شده است.');
+      return;
+    }
+    var rawHtml = String((data && (data.html || data.text)) || '').trim();
+    if (!rawHtml) throw new Error('Surya OCR 2 returned empty output');
+    var tableDetected = !!(data && data.detected_table) || /<table(?:\s|>)/i.test(rawHtml);
+    var text = tableDetected
+      ? suryaHtmlTableToMarkdown(rawHtml)
+      : suryaHtmlToPlainText(rawHtml);
+    if (!text) text = rawHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!text) throw new Error('Surya OCR 2 returned no readable text');
+    pushUndo('Surya OCR 2 bbox');
+    var targetBox = copyOnWriteOcrTarget(targetIndex, targetId);
+    if (tableDetected) {
+      targetBox.label = 'Table';
+      targetBox.raw_label = 'Table';
+      targetBox.model_primary_label = 'Table';
+      targetBox.contains_markdown_table = true;
+    }
+    targetBox.content_text = text;
+    targetBox.content_html = tableDetected ? rawHtml : textToHtml(text);
+    targetBox.content_source = (data && data.source) || 'stallion:surya-ocr-2-original';
+    targetBox.source = 'human_ai_fill';
+    if (selected === targetIndex) {
+      if (classSelect) classSelect.value = targetBox.label || 'Text';
+      if (ocrTextarea) { ocrTextarea.value = text; ocrEditorBoxId = String(targetBox.id != null ? targetBox.id : ''); ocrFocusedBoxId = ocrEditorBoxId; }
+    }
+    renderBoxes();
+    updateMarkdownPreview(text);
+    placeFloatingEditor();
+    scheduleSave('Surya OCR 2 bbox');
+    var elapsed = data && data.seconds != null ? ' · ' + Number(data.seconds).toFixed(2) + 's' : '';
+    setStatus(
+      tableDetected
+        ? '⚡ جدول با Surya 2 خوانده شد، برچسب Table شد و خودکار ذخیره شد' + elapsed
+        : '⚡ OCR با Surya 2 انجام و خودکار ذخیره شد' + elapsed
+    );
+  }
+  function geminiMarkdownTableToHtml(text) {
+    var lines = String(text || '').split(/\r?\n/).map(function(l) { return l.trim(); }).filter(Boolean);
+    var dividerIdx = -1;
+    for (var i = 1; i < lines.length; i++) {
+      var row = lines[i].replace(/^\|/, '').replace(/\|$/, '');
+      var cells = row.split('|').map(function(c) { return c.trim(); });
+      if (cells.length >= 2 && cells.every(function(c) { return /^[\s:-]+$/.test(c); })) {
+        dividerIdx = i;
+        break;
+      }
+    }
+    if (dividerIdx < 1) return '';
+    var headerRow = lines[dividerIdx - 1].replace(/^\|/, '').replace(/\|$/, '');
+    var headerCells = headerRow.split('|').map(function(c) { return c.trim(); });
+    if (headerCells.length < 2) return '';
+    var colCount = headerCells.length;
+    function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    var html = '<table>';
+    html += '<thead><tr>';
+    for (var ci = 0; ci < colCount; ci++) {
+      html += '<th>' + esc(headerCells[ci]) + '</th>';
+    }
+    html += '</tr></thead>';
+    var bodyRowCount = 0;
+    html += '<tbody>';
+    for (var ri = dividerIdx + 1; ri < lines.length; ri++) {
+      if (lines[ri].indexOf('|') < 0) break;
+      var rowLine = lines[ri].replace(/^\|/, '').replace(/\|$/, '');
+      var rowCells = rowLine.split('|').map(function(c) { return c.trim(); });
+      html += '<tr>';
+      for (var cj = 0; cj < colCount; cj++) {
+        html += '<td>' + esc(rowCells[cj] || '') + '</td>';
+      }
+      html += '</tr>';
+      bodyRowCount += 1;
+    }
+    html += '</tbody></table>';
+    if (bodyRowCount === 0) return '';
+    return html;
+  }
+
+  function runStallionBinaOcr(payload) {
+    setStatus('⚡ بینا در حال خواندن ناحیه است…');
+    return fetch('/seed-ocr-bina-box', {
+      method: 'POST',
+      headers: geminiRequestHeaders(),
+      body: JSON.stringify(payload)
+    }).then(function(response) {
+      return response.json().catch(function() { return {}; }).then(function(data) {
+        if (!response.ok) {
+          var error = new Error(data.detail || data.message || 'Bina OCR failed');
+          error.busy = response.status === 429;
+          throw error;
+        }
+        return data;
+      });
+    });
+  }
+  function applyBinaOcrResult(data, targetIndex, targetId, targetSnapshot) {
+    targetIndex = resolveOcrTargetIndex(targetIndex, targetId);
+    if (!boxes[targetIndex]) throw new Error('bbox removed while OCR was running');
+    if (!ocrTargetWasUnchanged(targetIndex, targetSnapshot)) {
+      setStatus('نتیجهٔ دیررس بینا نادیده گرفته شد چون این bbox بعداً ویرایش شده است.');
+      return;
+    }
+    var text = String((data && data.text) || '').trim();
+    if (!text) throw new Error('Bina OCR returned empty output');
+    pushUndo('Bina OCR bbox');
+    var targetBox = copyOnWriteOcrTarget(targetIndex, targetId);
+    targetBox.content_text = text;
+    targetBox.content_html = textToHtml(text);
+    targetBox.content_source = (data && data.source) || 'stallion_ocr';
+    targetBox.source = 'human_ai_fill';
+    if (selected === targetIndex) {
+      if (ocrTextarea) { ocrTextarea.value = text; ocrEditorBoxId = String(targetBox.id != null ? targetBox.id : ''); ocrFocusedBoxId = ocrEditorBoxId; }
+    }
+    renderBoxes();
+    updateMarkdownPreview(text);
+    placeFloatingEditor();
+    scheduleSave('Bina OCR bbox');
+    var elapsed = data && data.seconds != null ? ' · ' + Number(data.seconds).toFixed(2) + 's' : '';
+    setStatus('⚡ OCR با بینا انجام و خودکار ذخیره شد' + elapsed);
+  }
+
+  if (fillOcrButton) fillOcrButton.addEventListener('click', function(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    var payload = selectedBoxPayload();
+    if (!payload) {
+      setStatus('اول یک bbox را انتخاب کنید.');
+      return;
+    }
+    var targetIndex = selected;
+    var targetId = boxes[targetIndex] && boxes[targetIndex].id != null ? String(boxes[targetIndex].id) : '';
+    var targetSnapshot = JSON.stringify(payload.box);
+    fillOcrButton.disabled = true;
+    fillOcrButton.textContent = '⚡ در حال OCR…';
+    runStallionSurya2Ocr(payload).then(function(data) {
+      applySurya2OcrResult(data, targetIndex, targetId, targetSnapshot);
+    }).catch(function(error) {
+      var detail = String((error && (error.message || error)) || 'خطای نامشخص');
+      console.error('Stallion original Surya OCR 2 failed', error);
+      setStatus((error && error.busy ? 'Surya 2 شلوغ است: ' : 'خطای Surya 2: ') + detail.slice(0, 180));
+    }).finally(function() {
+      fillOcrButton.disabled = false;
+      fillOcrButton.textContent = '⚡ OCR · Surya 2';
+      placeFloatingEditor();
+    });
+  });
+  if (fillBinaOcrButton) fillBinaOcrButton.addEventListener('click', function(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    var payload = selectedBoxPayload();
+    if (!payload) {
+      setStatus('اول یک bbox را انتخاب کنید.');
+      return;
+    }
+    var targetIndex = selected;
+    var targetId = boxes[targetIndex] && boxes[targetIndex].id != null ? String(boxes[targetIndex].id) : '';
+    var targetSnapshot = JSON.stringify(payload.box);
+    fillBinaOcrButton.disabled = true;
+    fillBinaOcrButton.textContent = '⚡ در حال OCR…';
+    runStallionBinaOcr(payload).then(function(data) {
+      applyBinaOcrResult(data, targetIndex, targetId, targetSnapshot);
+    }).catch(function(error) {
+      var detail = String((error && (error.message || error)) || 'خطای نامشخص');
+      console.error('Bina OCR failed', error);
+      setStatus((error && error.busy ? 'بینا شلوغ است: ' : 'خطای بینا: ') + detail.slice(0, 180));
+    }).finally(function() {
+      fillBinaOcrButton.disabled = false;
+      fillBinaOcrButton.textContent = '⚡ OCR · بینا';
+      placeFloatingEditor();
+    });
+  });
+
+  if (fillGeminiOcrButton) fillGeminiOcrButton.addEventListener('click', function(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    var payload = selectedBoxPayload();
+    if (!payload) {
+      setStatus('اول یک bbox را انتخاب کنید.');
+      return;
+    }
+    var targetIndex = selected;
+    var targetId = boxes[targetIndex] && boxes[targetIndex].id != null ? String(boxes[targetIndex].id) : '';
+    var targetSnapshot = JSON.stringify(payload.box);
+    fillGeminiOcrButton.disabled = true;
+    fillGeminiOcrButton.textContent = '⚡ در حال OCR…';
+    runStallionGeminiOcr(payload).then(function(data) {
+      applyGeminiOcrResult(data, targetIndex, targetId, targetSnapshot);
+    }).catch(function(error) {
+      var detail = String((error && (error.message || error)) || 'خطای نامشخص');
+      console.error('Gemini OCR failed', error);
+      setStatus((error && error.busy ? 'Gemini شلوغ است: ' : 'خطای Gemini: ') + detail.slice(0, 180));
+    }).finally(function() {
+      fillGeminiOcrButton.disabled = false;
+      fillGeminiOcrButton.textContent = '⚡ OCR · Gemini (برای جدول)';
+      placeFloatingEditor();
+    });
+  });
+
+  if (copyBoxButton) copyBoxButton.addEventListener('click', function(ev){
+    ev.preventDefault();
+    ev.stopPropagation();
+    duplicateSelectedBox();
+  });
+  if (saveButton) saveButton.addEventListener('click', function(){
+    commitOcrIfChanged('OCR bbox');
+    persistNow('ذخیرهٔ دستی');
+  });
+  var drag = null;
+  var pendingDraw = null;
+  var drawThresholdPct = 0.35;
+  stage.addEventListener('pointerdown', function(ev){
+    var targetBox = ev.target.closest && ev.target.closest('.seed69k-layout-box');
+    var p = pointPct(ev);
+    var forceDraw = addMode || ev.shiftKey || ev.altKey;
+    if (targetBox && !forceDraw) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      var idx = Number(targetBox.dataset.index);
+      var domBoxId = targetBox.dataset.boxId || '';
+      if (domBoxId) {
+        for (var boxIndex = 0; boxIndex < boxes.length; boxIndex += 1) {
+          if (String(boxes[boxIndex] && boxes[boxIndex].id || '') === domBoxId) {
+            idx = boxIndex;
+            break;
+          }
+        }
+      }
+      if (!boxes[idx]) return;
+      selectBox(idx);
+      if (!stage.classList.contains('seed69k-edit-mode')) return;
+      var corner = ev.target.dataset && ev.target.dataset.corner;
+      pushUndo(corner ? 'resize bbox' : 'جابه‌جایی bbox');
+      drag = {mode: corner ? ('resize-' + corner) : 'move', index: idx, start: p, box: Object.assign({}, boxes[idx]), changed:false};
+      return;
+    }
+    if (!targetBox && !forceDraw) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      clearSelectedBox('برای ساخت bbox روی فضای خالی بکشید.');
+      forceDraw = true;
+    }
+    if (addMode || forceDraw) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      enableEditMode();
+      floatingEditor.style.display = 'none';
+      hideActiveHoverTip();
+      var label = classSelect ? classSelect.value : 'Text';
+      pendingDraw = {start:p, label:label};
+      if (classSelect) classSelect.value = label;
+      setStatus('بکشید تا bbox جدید ساخته شود؛ کلیک تنها چیزی اضافه نمی‌کند.');
+    }
+  });
+  window.addEventListener('pointermove', function(ev){
+    if (!drag && pendingDraw) {
+      var pp = pointPct(ev);
+      if (Math.abs(pp.x - pendingDraw.start.x) < drawThresholdPct && Math.abs(pp.y - pendingDraw.start.y) < drawThresholdPct) return;
+      pushUndo('افزودن bbox');
+      boxes.push({id:'h' + Date.now(), label:pendingDraw.label, left_pct:pendingDraw.start.x, top_pct:pendingDraw.start.y, width_pct:0.1, height_pct:0.1, source:'human_edit'});
+      selected = boxes.length - 1;
+      drag = {mode:'draw', index:selected, start:pendingDraw.start, box:Object.assign({}, boxes[selected]), changed:true};
+      pendingDraw = null;
+      renderBoxes();
+    }
+    if (!drag) return;
+    var p = pointPct(ev);
+    var b = boxes[drag.index];
+    if (!b) return;
+    drag.changed = true;
+    if (drag.mode === 'move') {
+      b.left_pct = Math.max(0, Math.min(100 - Number(drag.box.width_pct || 1), Number(drag.box.left_pct || 0) + (p.x - drag.start.x)));
+      b.top_pct = Math.max(0, Math.min(100 - Number(drag.box.height_pct || 1), Number(drag.box.top_pct || 0) + (p.y - drag.start.y)));
+    } else if (drag.mode.indexOf('resize-') === 0) {
+      var left0 = Number(drag.box.left_pct || 0);
+      var top0 = Number(drag.box.top_pct || 0);
+      var right0 = left0 + Number(drag.box.width_pct || 0);
+      var bottom0 = top0 + Number(drag.box.height_pct || 0);
+      var xA = left0, xB = right0, yA = top0, yB = bottom0;
+      if (drag.mode === 'resize-nw') { xA = p.x; yA = p.y; }
+      if (drag.mode === 'resize-ne') { xB = p.x; yA = p.y; }
+      if (drag.mode === 'resize-sw') { xA = p.x; yB = p.y; }
+      if (drag.mode === 'resize-se') { xB = p.x; yB = p.y; }
+      var nx0 = Math.max(0, Math.min(100, Math.min(xA, xB)));
+      var nx1 = Math.max(0, Math.min(100, Math.max(xA, xB)));
+      var ny0 = Math.max(0, Math.min(100, Math.min(yA, yB)));
+      var ny1 = Math.max(0, Math.min(100, Math.max(yA, yB)));
+      b.left_pct = nx0;
+      b.top_pct = ny0;
+      b.width_pct = Math.max(.1, nx1 - nx0);
+      b.height_pct = Math.max(.1, ny1 - ny0);
+    } else {
+      var x0 = Math.min(drag.start.x, p.x), y0 = Math.min(drag.start.y, p.y);
+      var x1 = Math.max(drag.start.x, p.x), y1 = Math.max(drag.start.y, p.y);
+      b.left_pct = x0; b.top_pct = y0; b.width_pct = Math.max(.1, x1 - x0); b.height_pct = Math.max(.1, y1 - y0);
+    }
+    b.source = 'human_edit';
+    renderBoxes();
+  });
+  window.addEventListener('pointerup', function(){
+    var completedDraw = !!(drag && drag.mode === 'draw');
+    if (drag) {
+      var changedByDrag = !!drag.changed;
+      drag = null; addMode = false;
+      if (addButton) addButton.classList.remove('seed69k-active');
+      if (changedByDrag) {
+        scheduleSave('ویرایش bbox');
+        setStatus('ویرایش انجام شد؛ در حال ذخیرهٔ خودکار…');
+      }
+    }
+    if (pendingDraw) {
+      pendingDraw = null;
+      setStatus('کلیک خالی بود؛ bbox جدید فقط با کشیدن ساخته می‌شود.');
+    }
+    if (completedDraw) {
+      /* Keep the new bbox selected, but do not open the full OCR editor on mouse-up. */
+      renderBoxes();
+      floatingEditor.style.display = 'none';
+    }
+  });
+  document.addEventListener('pointerdown', function(ev){
+    /* seed69k-radial-open-pointer-guard-v1 */
+    if (floatingReviewPanel && floatingReviewPanel.classList.contains('seed69k-radial-open')) return;
+    var eventTarget = ev && ev.target;
+    var isNodeTarget = !!(eventTarget && typeof eventTarget.nodeType === 'number');
+    var insideFloat = floatingEditor && isNodeTarget && floatingEditor.contains(eventTarget);
+    var insideToolbar = toolbar && isNodeTarget && toolbar.contains(eventTarget);
+    var insideRadialAction = isNodeTarget && eventTarget.closest && eventTarget.closest('.seed69k-radial-item, .seed69k-radial-toggle');
+    var insideReview = floatingReviewPanel && isNodeTarget && floatingReviewPanel.contains(eventTarget);
+    var selectedBox = stage.querySelector('.seed69k-layout-box.seed69k-selected');
+    var insideSelectedBox = selectedBox && isNodeTarget && selectedBox.contains(eventTarget);
+    var insideAnyBox = isNodeTarget && eventTarget.closest && eventTarget.closest('.seed69k-layout-box');
+    if (!insideRadialAction && !insideFloat && !insideToolbar && !insideReview && !insideSelectedBox && !insideAnyBox && !addMode && !ev.shiftKey && !ev.altKey) {
+      clearSelectedBox('bbox از حالت انتخاب خارج شد.');
+    }
+  }, true);
+  function handleEditorHostPointerDown(ev) {
+    if (editorHostDocument === document) return;
+    var eventTarget = ev && ev.target;
+    var isNodeTarget = !!(eventTarget && typeof eventTarget.nodeType === 'number');
+    if (floatingEditor && isNodeTarget && floatingEditor.contains(eventTarget)) return;
+    if (floatingReviewPanel && isNodeTarget && floatingReviewPanel.contains(eventTarget)) return;
+    clearSelectedBox('bbox از حالت انتخاب خارج شد.');
+  }
+  /* seed69k-gemini-session-auth-v1 */
+  function geminiRequestHeaders() {
+    var headers = {'Content-Type': 'application/json'};
+    try {
+      var host = window.parent && window.parent !== window ? window.parent : window;
+      var token = host.localStorage && host.localStorage.getItem('auth._token.local');
+      if (token && token !== 'false') headers.Authorization = /^Bearer\s/i.test(token) ? token : 'Bearer ' + token;
+    } catch (_) {}
+    return headers;
+  }
+  function runStallionGeminiOcr(payload) {
+    setStatus('⚡ Gemini در حال خواندن ناحیه است…');
+    return fetch('/seed-ocr-gemini-box', {
+      method: 'POST',
+      headers: geminiRequestHeaders(),
+      body: JSON.stringify(payload)
+    }).then(function(response) {
+      return response.json().catch(function() { return {}; }).then(function(data) {
+        if (!response.ok) {
+          var error = new Error(data.detail || data.message || 'Gemini OCR failed');
+          error.busy = response.status === 429;
+          throw error;
+        }
+        return data;
+      });
+    });
+  }
+  function applyGeminiOcrResult(data, targetIndex, targetId, targetSnapshot) {
+    targetIndex = resolveOcrTargetIndex(targetIndex, targetId);
+    if (!boxes[targetIndex]) throw new Error('bbox removed while OCR was running');
+    if (!ocrTargetWasUnchanged(targetIndex, targetSnapshot)) {
+      setStatus('نتیجهٔ دیررس Gemini نادیده گرفته شد چون این bbox بعداً ویرایش شده است.');
+      return;
+    }
+    var text = String((data && data.text) || '').trim();
+    if (!text) throw new Error('Gemini OCR returned empty output');
+    pushUndo('Gemini OCR bbox');
+    var targetBox = copyOnWriteOcrTarget(targetIndex, targetId);
+    var markdownTableDetected = /\|/.test(text) && /^[\|\s:-]+$/m.test(text);
+    targetBox.content_text = text;
+    /* Keep Gemini Markdown as the canonical table source. The comparison overlay
+       parses it in source order, so old reversed HTML cannot affect the view. */
+    targetBox.content_html = textToHtml(text);
+    if (markdownTableDetected) {
+      var tableLines = text.split(/\r?\n/).filter(function(l) { return l.indexOf('|') >= 0; });
+      if (tableLines.length >= 2) {
+        targetBox.label = 'Table';
+        targetBox.raw_label = 'Table';
+        targetBox.model_primary_label = 'Table';
+        targetBox.contains_markdown_table = true;
+      }
+    }
+    targetBox.content_source = (data && data.source) || 'openrouter_gemini';
+    targetBox.source = 'human_ai_fill';
+    if (selected === targetIndex) {
+      if (ocrTextarea) { ocrTextarea.value = text; ocrEditorBoxId = String(targetBox.id != null ? targetBox.id : ''); ocrFocusedBoxId = ocrEditorBoxId; }
+    }
+    renderBoxes();
+    updateMarkdownPreview(text);
+    placeFloatingEditor();
+    scheduleSave('Gemini OCR bbox');
+    var elapsed = data && data.seconds != null ? ' · ' + Number(data.seconds).toFixed(2) + 's' : '';
+        setStatus(
+      markdownTableDetected
+        ? '\u26a1 \u062C\u062F\u0648\u0644 \u0628\u0627 Gemini \u062E\u0648\u0627\u0646\u062F\u0647 \u0634\u062F\u060C \u0628\u0631\u0686\u0633\u0628 Table \u0634\u062F \u0648 \u062E\u0648\u062F\u06A9\u0627\u0631 \u0630\u062E\u06CC\u0631\u0647 \u0634\u062F' + elapsed
+        : '\u26a1 OCR \u0628\u0627 Gemini \u0627\u0646\u062C\u0627\u0645 \u0648 \u062E\u0648\u062F\u06A9\u0627\u0631 \u0630\u062E\u06CC\u0631\u0647 \u0634\u062F' + elapsed
+    );
+  }
+
+  window.addEventListener('scroll', hideDetachedTips, true);
+  window.addEventListener('scroll', placeFloatingEditor, true);
+  window.addEventListener('resize', placeFloatingEditor);
+  function removeEditorHostListeners() {
+    if (!editorHostWindow || editorHostWindow === window) return;
+    editorHostWindow.removeEventListener('scroll', hideDetachedTips, true);
+    editorHostWindow.removeEventListener('scroll', placeFloatingEditor, true);
+    editorHostWindow.removeEventListener('resize', placeFloatingEditor);
+    editorHostDocument.removeEventListener('pointerdown', handleEditorHostPointerDown, true);
+    editorHostDocument.removeEventListener('keydown', handleEditorHostKeyDown, true);
+  }
+  if (editorHostWindow && editorHostWindow !== window) {
+    editorHostWindow.addEventListener('scroll', hideDetachedTips, true);
+    editorHostWindow.addEventListener('scroll', placeFloatingEditor, true);
+    editorHostWindow.addEventListener('resize', placeFloatingEditor);
+    editorHostDocument.addEventListener('pointerdown', handleEditorHostPointerDown, true);
+    editorHostDocument.addEventListener('keydown', handleEditorHostKeyDown, true);
+  }
+  function flushLayoutEditsOnPageHide() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    persistNow('page navigation');
+  }
+  window.addEventListener('pagehide', flushLayoutEditsOnPageHide, true);
+  window.addEventListener('beforeunload', function(){
+    flushLayoutEditsOnPageHide();
+    removeDetachedTips();
+    removeEditorHostListeners();
+  });
+})();
+</script>
+<!-- seed69k-hide-editor-during-bbox-draw-v1 -->
+<!-- seed69k-context-editor-outside-bbox-v1 -->
+<!-- seed69k-hide-hover-for-selected-bbox-v1 seed69k-gemini-ocr-v2 seed69k-queue-counter-fix-v2 seed69k-bina-ocr-v1 seed69k-gemini-ocr-table-detection-v1 -->
+
+<script data-patch="seed69k-no-table-project-ui-v24">
+(function() {
+  var hostDocument;
+  try { hostDocument = window.parent && window.parent.document; } catch (e) { return; }
+  if (!hostDocument) return;
+  function collapseGuidelinesAtStartup() {
+    Array.prototype.slice.call(
+      hostDocument.querySelectorAll('button.panel__header[aria-expanded="true"]')
+    ).forEach(function(button) {
+      if (String(button.textContent || '').trim() === 'رهنمودها') button.click();
+    });
+  }
+  [0, 80, 250, 700, 1400].forEach(function(delay) {
+    window.setTimeout(collapseGuidelinesAtStartup, delay);
+  });
+})();
+</script>
+<!-- seed69k-no-editor-after-draw-v1 -->
+
+<!-- seed69k-duplicate-independent-content-v1 -->
+
+<!-- seed69k-ocr-target-copy-on-write-v1 -->
+
+<!-- seed69k-ocr-isolation-raceproof-v1 -->
+<!-- seed69k-ocr-isolation-deepcopy-v1 -->
+<!-- seed69k-ocr-isolation-stale-result-guard-v1 -->
+<!-- seed69k-ocr-isolation-direct-input-v1 -->
+<!-- seed69k-ocr-editor-bound-v1 -->
+<!-- seed69k-ocr-atomic-selection-v1 -->
+
+<script data-patch="seed69k-gemini-admin-only-v2">
+(function() {
+  var hostDocument = document;
+  try { if (window.parent && window.parent.document) hostDocument = window.parent.document; } catch (_) {}
+  function isAdmin() {
+    try {
+      var host = window.parent && window.parent !== window ? window.parent : window;
+      var auth = host.$nuxt && host.$nuxt.$auth;
+      var user = auth && auth.user;
+      if (user && String(user.username || '').toLowerCase() === 'admin') return true;
+      var raw = host.localStorage && host.localStorage.getItem('auth._user.local');
+      var cached = raw && JSON.parse(raw);
+      return !!(cached && String(cached.username || '').toLowerCase() === 'admin');
+    } catch (_) { return false; }
+  }
+  function applyAccess() {
+    var gemini = hostDocument.querySelectorAll('.seed69k-ocr-gemini');
+    var geminiAllowed = false;
+    try {
+      var host = window.parent && window.parent !== window ? window.parent : window;
+      var auth = host.$nuxt && host.$nuxt.$auth;
+      var currentUser = auth && auth.user;
+      if (!currentUser) {
+        var savedUser = host.localStorage && host.localStorage.getItem('auth._user.local');
+        currentUser = savedUser && JSON.parse(savedUser);
+      }
+      geminiAllowed = !!(currentUser && currentUser.role === 'owner');
+    } catch (_) {}
+    for (var i = 0; i < gemini.length; i += 1) {
+      var button = gemini[i];
+      button.style.display = geminiAllowed ? '' : 'none';
+      button.setAttribute('aria-hidden', geminiAllowed ? 'false' : 'true');
+      if (geminiAllowed) {
+        button.removeAttribute('tabindex');
+        if (button.hasAttribute('data-gemini-access-blocked')) {
+          button.disabled = false;
+          button.removeAttribute('data-gemini-access-blocked');
+        }
+      } else {
+        button.disabled = true;
+        button.setAttribute('tabindex', '-1');
+        button.setAttribute('data-gemini-access-blocked', 'true');
+      }
+    }
+    var surya = hostDocument.querySelectorAll('.seed69k-ocr-fill');
+    var allowed = isAdmin();
+    for (var j = 0; j < surya.length; j += 1) {
+      surya[j].style.display = allowed ? '' : 'none'; surya[j].disabled = !allowed;
+      surya[j].setAttribute('aria-hidden', allowed ? 'false' : 'true');
+      if (allowed) surya[j].removeAttribute('tabindex'); else surya[j].setAttribute('tabindex', '-1');
+    }
+  }
+  applyAccess(); window.setInterval(applyAccess, 750);
+})();
+</script>
+
+
+
+
+
+<script data-patch="radial-vue-class-repair-v2">
+(function() {
+  var doc = document;
+  try { if (window.parent && window.parent.document) doc = window.parent.document; } catch (_) {}
+  if (doc._radialVueObserver) doc._radialVueObserver.disconnect();
+  doc.documentElement.dataset.radialVueClassRepair = '2';
+  function repair() {
+    doc.querySelectorAll('.questions-form.wrapper__form[data-seed69k-radial-installed="1"]').forEach(function(form) {
+      var toggle = form.querySelector('.seed69k-radial-toggle');
+      if (!toggle) return;
+      if (!form.classList.contains('seed69k-floating-review')) form.classList.add('seed69k-floating-review');
+      var open = toggle.getAttribute('aria-expanded') === 'true';
+      if (form.classList.contains('seed69k-radial-open') !== open) form.classList.toggle('seed69k-radial-open', open);
+      var items = Array.prototype.slice.call(form.querySelectorAll('.inputs-area > .input-button[role="button"], .footer-form .button--submit'));
+      items.forEach(function(item, index) {
+        if (!item.classList.contains('seed69k-radial-item')) item.classList.add('seed69k-radial-item');
+        var angle = (-150 + index * (300 / Math.max(1, items.length - 1))) * Math.PI / 180;
+        [['--radial-x', (Math.cos(angle)*118).toFixed(2)+'px'], ['--radial-y', (Math.sin(angle)*118).toFixed(2)+'px'], ['--radial-delay', String(index*34)+'ms']].forEach(function(pair) {
+          if (item.style.getPropertyValue(pair[0]) !== pair[1]) item.style.setProperty(pair[0], pair[1]);
+        });
+      });
+    });
+  }
+  var Observer = doc.defaultView.MutationObserver;
+  doc._radialVueObserver = new Observer(repair);
+  if (doc.body) doc._radialVueObserver.observe(doc.body, {subtree:true, childList:true, attributes:true, attributeFilter:['class','aria-expanded']});
+  repair();
+})();
+</script>

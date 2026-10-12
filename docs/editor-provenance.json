@@ -1,0 +1,15 @@
+{
+  "source": "PersianVLM custom field snapshot used for the Hafez import (September 2026)",
+  "source_sha256": "36f8030d5f74cc9e9963c48edbd62916e1f7f39ae39464aebf51f354c7b1b983",
+  "source_template_sha256": "31d0e8c824e360543545ef121e9cd7cc16f5aec21e38490c2cb9f7768efeb72a",
+  "changes": [
+    "inline local images",
+    "authenticated per-user local edit storage",
+    "remove remote font import",
+    "remove hosted model actions",
+    "bundle local Vazirmatn font",
+    "defer cached-image initialization until editor state exists",
+    "use parent-window observer for parent DOM"
+  ],
+  "live_production_snapshot_verified": false
+}

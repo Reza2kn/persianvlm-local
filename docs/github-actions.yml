@@ -1,0 +1,16 @@
+name: Validate local package
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - run: pip install -r app/requirements.txt
+      - run: DATA_DIR=$(mktemp -d) python -m unittest discover -s tests -p 'test_*.py'
+      - run: bash -n install.sh local.sh
+      - run: ./local.sh start
+      - run: python tests/smoke.py
+      - if: failure()
+        run: docker compose logs --tail 100
